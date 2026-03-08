@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="VoroBidsCrm.API/VoroBidsCrm.API.csproj" />
+  <Project Path="VoroBidsCrm.Application/VoroBidsCrm.Application.csproj" />
+  <Project Path="VoroBidsCrm.Contract/VoroBidsCrm.Contract.csproj" Id="2a3100e7-6d6d-46c2-b113-9764092b3584" />
+  <Project Path="VoroBidsCrm.Domain/VoroBidsCrm.Domain.csproj" />
+  <Project Path="VoroBidsCrm.Infrastructure/VoroBidsCrm.Infrastructure.csproj" />
+  <Project Path="VoroBidsCrm.Shared/VoroBidsCrm.Shared.csproj" Id="5c2730a9-2d3a-4329-8b91-4910993e8ce8" />
+</Solution>

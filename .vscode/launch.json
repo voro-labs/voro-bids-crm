@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API C#",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/voro-bids-crm-api/VoroBidsCrm.API/VoroBidsCrm.API.csproj",
+      "launchConfigurationId": "TargetFramework=;http-public"
+    },
+    {
+      "name": "Next.js Frontend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "cwd": "${workspaceFolder}/voro-bids-crm-front",
+      "console": "integratedTerminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Start API + Front",
+      "configurations": [
+        "API C#",
+        "Next.js Frontend"
+      ]
+    }
+  ]
+}
