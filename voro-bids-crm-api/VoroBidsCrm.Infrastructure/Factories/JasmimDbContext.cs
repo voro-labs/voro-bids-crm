@@ -29,13 +29,15 @@ namespace VoroBidsCrm.Infrastructure.Factories
         public DbSet<UserTenant> UserTenants { get; set; }
         public DbSet<UserExtension> UserExtensions { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<Client> Clients { get; set; }
-        public DbSet<Service> Services { get; set; }
-        public DbSet<ServiceRecord> ServiceRecords { get; set; }
-        public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<Auction> Auctions { get; set; }
+        public DbSet<AuctionDocument> AuctionDocuments { get; set; }
+        public DbSet<DocumentFile> DocumentFiles { get; set; }
+        public DbSet<CompanyDocument> CompanyDocuments { get; set; }
+        public DbSet<InternalRequest> InternalRequests { get; set; }
+        public DbSet<AuctionChecklist> AuctionChecklists { get; set; }
+        public DbSet<ActivityLog> ActivityLogs { get; set; }
+        public DbSet<Comment> Comments { get; set; }
         public DbSet<TenantModule> TenantModules { get; set; }
-        public DbSet<Employee> Employees { get; set; }
-        public DbSet<EmployeeService> EmployeeServices { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -52,23 +54,32 @@ namespace VoroBidsCrm.Infrastructure.Factories
             builder.Entity<Notification>().HasQueryFilter(n =>
                 !n.IsDeleted && n.TenantId == _currentUser.TenantId);
 
-            builder.Entity<Client>().HasQueryFilter(c =>
-                !c.IsDeleted && c.TenantId == _currentUser.TenantId);
-
-            builder.Entity<Service>().HasQueryFilter(s =>
-                !s.IsDeleted && s.TenantId == _currentUser.TenantId);
-
-            builder.Entity<ServiceRecord>().HasQueryFilter(s =>
-                !s.IsDeleted && s.TenantId == _currentUser.TenantId);
-
-            builder.Entity<Appointment>().HasQueryFilter(a =>
+            builder.Entity<Auction>().HasQueryFilter(a =>
                 !a.IsDeleted && a.TenantId == _currentUser.TenantId);
+
+            builder.Entity<AuctionDocument>().HasQueryFilter(ad =>
+                !ad.IsDeleted && ad.TenantId == _currentUser.TenantId);
+
+            builder.Entity<DocumentFile>().HasQueryFilter(df =>
+                !df.IsDeleted && df.TenantId == _currentUser.TenantId);
+
+            builder.Entity<CompanyDocument>().HasQueryFilter(cd =>
+                !cd.IsDeleted && cd.TenantId == _currentUser.TenantId);
+
+            builder.Entity<InternalRequest>().HasQueryFilter(ir =>
+                !ir.IsDeleted && ir.TenantId == _currentUser.TenantId);
+
+            builder.Entity<AuctionChecklist>().HasQueryFilter(ac =>
+                !ac.IsDeleted && ac.TenantId == _currentUser.TenantId);
+
+            builder.Entity<ActivityLog>().HasQueryFilter(al =>
+                al.TenantId == _currentUser.TenantId);
+
+            builder.Entity<Comment>().HasQueryFilter(c =>
+                !c.IsDeleted && c.TenantId == _currentUser.TenantId);
 
             builder.Entity<TenantModule>().HasQueryFilter(tm =>
                 tm.TenantId == _currentUser.TenantId);
-
-            builder.Entity<Employee>().HasQueryFilter(e =>
-                !e.IsDeleted && e.TenantId == _currentUser.TenantId);
 
             // ---------------------------
             // TENANT
@@ -122,148 +133,178 @@ namespace VoroBidsCrm.Infrastructure.Factories
             });
 
             // ---------------------------
-            // CLIENT
+            // AUCTIONS
             // ---------------------------
-            builder.Entity<Client>(b =>
-            {
-                b.HasKey(c => c.Id);
-                b.Property(c => c.Name).HasMaxLength(200).IsRequired();
-                b.Property(c => c.Phone).HasMaxLength(50);
-                b.Property(c => c.CreatedAt).HasDefaultValueSql("TIMEZONE('utc', NOW())");
-
-                // Indexes equivalentes ao SQL: idx_clients_tenant, idx_clients_name
-                b.HasIndex(c => c.TenantId);
-                b.HasIndex(c => new { c.TenantId, c.Name });
-
-                b.HasOne<Tenant>()
-                 .WithMany()
-                 .HasForeignKey(c => c.TenantId)
-                 .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            // ---------------------------
-            // SERVICE
-            // ---------------------------
-            builder.Entity<Service>(b =>
-            {
-                b.HasKey(s => s.Id);
-                b.Property(s => s.Name).HasMaxLength(200).IsRequired();
-                b.Property(s => s.Price).HasColumnType("NUMERIC(10,2)").HasDefaultValue(0);
-                b.Property(s => s.DurationMinutes).HasDefaultValue(30);
-                b.Property(s => s.CreatedAt).HasDefaultValueSql("TIMEZONE('utc', NOW())");
-
-                b.HasIndex(s => s.TenantId);
-
-                b.HasOne<Tenant>()
-                 .WithMany()
-                 .HasForeignKey(s => s.TenantId)
-                 .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            // ---------------------------
-            // SERVICE RECORD
-            // ---------------------------
-            builder.Entity<ServiceRecord>(b =>
-            {
-                b.HasKey(s => s.Id);
-                b.Property(s => s.ServiceDate).HasDefaultValueSql("TIMEZONE('utc', NOW())");
-                b.Property(s => s.Description).IsRequired();
-                b.Property(s => s.Amount).HasColumnType("NUMERIC(10,2)").HasDefaultValue(0);
-                b.Property(s => s.CreatedAt).HasDefaultValueSql("TIMEZONE('utc', NOW())");
-
-                // Indexes equivalentes ao SQL: idx_services_tenant, idx_services_client, idx_services_date
-                b.HasIndex(s => s.TenantId);
-                b.HasIndex(s => s.ClientId);
-                b.HasIndex(s => s.ServiceId);
-                b.HasIndex(s => new { s.TenantId, s.ServiceDate }).IsDescending(false, true);
-
-                b.HasOne<Tenant>()
-                 .WithMany()
-                 .HasForeignKey(s => s.TenantId)
-                 .OnDelete(DeleteBehavior.Cascade);
-
-                b.HasOne(s => s.Client)
-                 .WithMany()
-                 .HasForeignKey(s => s.ClientId)
-                 .OnDelete(DeleteBehavior.Cascade);
-
-                b.HasOne(s => s.Service)
-                 .WithMany()
-                 .HasForeignKey(s => s.ServiceId)
-                 .OnDelete(DeleteBehavior.SetNull);
-            });
-
-            // ---------------------------
-            // APPOINTMENT (Agendamento)
-            // ---------------------------
-            builder.Entity<Appointment>(b =>
+            builder.Entity<Auction>(b =>
             {
                 b.HasKey(a => a.Id);
-                b.Property(a => a.ScheduledDateTime).IsRequired();
-                b.Property(a => a.DurationMinutes).HasDefaultValue(30);
-                b.Property(a => a.Status).HasConversion<int>().IsRequired();
-                b.Property(a => a.Amount).HasColumnType("NUMERIC(10,2)").HasDefaultValue(0);
+                b.Property(a => a.Title).HasMaxLength(255).IsRequired();
+                b.Property(a => a.Organization).HasMaxLength(255).IsRequired();
                 b.Property(a => a.CreatedAt).HasDefaultValueSql("TIMEZONE('utc', NOW())");
+                b.Property(a => a.Status).HasConversion<int>().IsRequired();
 
                 b.HasIndex(a => a.TenantId);
-                b.HasIndex(a => a.ClientId);
-                b.HasIndex(a => a.ServiceId);
-                b.HasIndex(a => new { a.TenantId, a.ScheduledDateTime });
 
                 b.HasOne<Tenant>()
                  .WithMany()
                  .HasForeignKey(a => a.TenantId)
                  .OnDelete(DeleteBehavior.Cascade);
-
-                b.HasOne(a => a.Client)
-                 .WithMany()
-                 .HasForeignKey(a => a.ClientId)
-                 .OnDelete(DeleteBehavior.Cascade);
-
-                b.HasOne(a => a.Service)
-                 .WithMany()
-                 .HasForeignKey(a => a.ServiceId)
-                 .OnDelete(DeleteBehavior.SetNull);
-
-                b.HasOne(a => a.Employee)
-                 .WithMany()
-                 .HasForeignKey(a => a.EmployeeId)
-                 .OnDelete(DeleteBehavior.SetNull);
             });
 
             // ---------------------------
-            // EMPLOYEE
+            // AUCTION DOCUMENTS
             // ---------------------------
-            builder.Entity<Employee>(b =>
+            builder.Entity<AuctionDocument>(b =>
             {
-                b.HasKey(e => e.Id);
-                b.Property(e => e.Name).HasMaxLength(200).IsRequired();
-                b.Property(e => e.CreatedAt).HasDefaultValueSql("TIMEZONE('utc', NOW())");
-                b.Property(e => e.IsActive).HasDefaultValue(true);
+                b.HasKey(ad => ad.Id);
+                b.Property(ad => ad.Name).HasMaxLength(255).IsRequired();
+                b.Property(ad => ad.CreatedAt).HasDefaultValueSql("TIMEZONE('utc', NOW())");
+                b.Property(ad => ad.Status).HasConversion<int>().IsRequired();
 
-                b.HasIndex(e => e.TenantId);
+                b.HasIndex(ad => ad.TenantId);
+                b.HasIndex(ad => ad.AuctionId);
 
-                b.HasOne(e => e.Tenant)
+                b.HasOne<Tenant>()
                  .WithMany()
-                 .HasForeignKey(e => e.TenantId)
+                 .HasForeignKey(ad => ad.TenantId)
+                 .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasOne(ad => ad.Auction)
+                 .WithMany(a => a.Documents)
+                 .HasForeignKey(ad => ad.AuctionId)
                  .OnDelete(DeleteBehavior.Cascade);
             });
 
             // ---------------------------
-            // EMPLOYEE SERVICE (Specialties)
+            // DOCUMENT FILES
             // ---------------------------
-            builder.Entity<EmployeeService>(b =>
+            builder.Entity<DocumentFile>(b =>
             {
-                b.HasKey(es => new { es.EmployeeId, es.ServiceId });
+                b.HasKey(df => df.Id);
+                b.Property(df => df.FileUrl).HasMaxLength(2048).IsRequired();
+                b.Property(df => df.FileName).HasMaxLength(255).IsRequired();
+                b.Property(df => df.CreatedAt).HasDefaultValueSql("TIMEZONE('utc', NOW())");
 
-                b.HasOne(es => es.Employee)
-                 .WithMany(e => e.Specialties)
-                 .HasForeignKey(es => es.EmployeeId)
+                b.HasIndex(df => df.TenantId);
+                b.HasIndex(df => df.AuctionDocumentId);
+
+                b.HasOne<Tenant>()
+                 .WithMany()
+                 .HasForeignKey(df => df.TenantId)
                  .OnDelete(DeleteBehavior.Cascade);
 
-                b.HasOne(es => es.Service)
+                b.HasOne(df => df.AuctionDocument)
+                 .WithMany(ad => ad.Files)
+                 .HasForeignKey(df => df.AuctionDocumentId)
+                 .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ---------------------------
+            // COMPANY DOCUMENTS
+            // ---------------------------
+            builder.Entity<CompanyDocument>(b =>
+            {
+                b.HasKey(cd => cd.Id);
+                b.Property(cd => cd.Name).HasMaxLength(255).IsRequired();
+                b.Property(cd => cd.FileUrl).HasMaxLength(2048).IsRequired();
+                b.Property(cd => cd.CreatedAt).HasDefaultValueSql("TIMEZONE('utc', NOW())");
+
+                b.HasIndex(cd => cd.TenantId);
+
+                b.HasOne<Tenant>()
                  .WithMany()
-                 .HasForeignKey(es => es.ServiceId)
+                 .HasForeignKey(cd => cd.TenantId)
+                 .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ---------------------------
+            // INTERNAL REQUESTS
+            // ---------------------------
+            builder.Entity<InternalRequest>(b =>
+            {
+                b.HasKey(ir => ir.Id);
+                b.Property(ir => ir.Title).HasMaxLength(255).IsRequired();
+                b.Property(ir => ir.CreatedAt).HasDefaultValueSql("TIMEZONE('utc', NOW())");
+                b.Property(ir => ir.Status).HasConversion<int>().IsRequired();
+
+                b.HasIndex(ir => ir.TenantId);
+
+                b.HasOne<Tenant>()
+                 .WithMany()
+                 .HasForeignKey(ir => ir.TenantId)
+                 .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasOne(ir => ir.Auction)
+                 .WithMany(a => a.InternalRequests)
+                 .HasForeignKey(ir => ir.AuctionId)
+                 .OnDelete(DeleteBehavior.SetNull);
+
+                b.HasOne(ir => ir.Requester)
+                 .WithMany()
+                 .HasForeignKey(ir => ir.RequesterId)
+                 .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasOne(ir => ir.Assignee)
+                 .WithMany()
+                 .HasForeignKey(ir => ir.AssigneeId)
+                 .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // ---------------------------
+            // AUCTION CHECKLIST
+            // ---------------------------
+            builder.Entity<AuctionChecklist>(b =>
+            {
+                b.HasKey(ac => ac.Id);
+                b.Property(ac => ac.TaskName).HasMaxLength(255).IsRequired();
+                b.Property(ac => ac.CreatedAt).HasDefaultValueSql("TIMEZONE('utc', NOW())");
+
+                b.HasIndex(ac => ac.TenantId);
+
+                b.HasOne<Tenant>()
+                 .WithMany()
+                 .HasForeignKey(ac => ac.TenantId)
+                 .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasOne(ac => ac.Auction)
+                 .WithMany(a => a.Checklists)
+                 .HasForeignKey(ac => ac.AuctionId)
+                 .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ---------------------------
+            // ACTIVITY LOGS
+            // ---------------------------
+            builder.Entity<ActivityLog>(b =>
+            {
+                b.HasKey(al => al.Id);
+                b.Property(al => al.Action).HasMaxLength(100).IsRequired();
+                b.Property(al => al.EntityType).HasMaxLength(100).IsRequired();
+                b.Property(al => al.CreatedAt).HasDefaultValueSql("TIMEZONE('utc', NOW())");
+
+                b.HasIndex(al => al.TenantId);
+
+                b.HasOne<Tenant>()
+                 .WithMany()
+                 .HasForeignKey(al => al.TenantId)
+                 .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ---------------------------
+            // COMMENTS
+            // ---------------------------
+            builder.Entity<Comment>(b =>
+            {
+                b.HasKey(c => c.Id);
+                b.Property(c => c.EntityType).HasMaxLength(100).IsRequired();
+                b.Property(c => c.Text).HasMaxLength(1024).IsRequired();
+                b.Property(c => c.CreatedAt).HasDefaultValueSql("TIMEZONE('utc', NOW())");
+
+                b.HasIndex(c => c.TenantId);
+
+                b.HasOne<Tenant>()
+                 .WithMany()
+                 .HasForeignKey(c => c.TenantId)
                  .OnDelete(DeleteBehavior.Cascade);
             });
 

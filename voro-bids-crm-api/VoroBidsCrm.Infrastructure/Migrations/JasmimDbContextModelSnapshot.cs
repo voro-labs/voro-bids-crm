@@ -110,18 +110,152 @@ namespace VoroBidsCrm.Infrastructure.Migrations
                     b.ToTable("UserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Appointment", b =>
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.ActivityLog", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Amount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMERIC(10,2)")
-                        .HasDefaultValue(0m);
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-                    b.Property<Guid>("ClientId")
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("TIMEZONE('utc', NOW())");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ActivityLogs");
+                });
+
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Auction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("BiddingDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("TIMEZONE('utc', NOW())");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Organization")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTimeOffset?>("PublishDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ResponsibleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ResponsibleId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("Auctions");
+                });
+
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.AuctionChecklist", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("TIMEZONE('utc', NOW())");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("TaskName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("AuctionChecklists");
+                });
+
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.AuctionDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuctionId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -135,24 +269,18 @@ namespace VoroBidsCrm.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<int>("DurationMinutes")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(30);
-
-                    b.Property<Guid?>("EmployeeId")
-                        .HasColumnType("uuid");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
-                    b.Property<DateTimeOffset>("ScheduledDateTime")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<bool>("RequiresUpload")
+                        .HasColumnType("boolean");
 
-                    b.Property<Guid?>("ServiceId")
+                    b.Property<Guid?>("ResponsibleId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Status")
@@ -166,20 +294,16 @@ namespace VoroBidsCrm.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
+                    b.HasIndex("AuctionId");
 
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("ServiceId");
+                    b.HasIndex("ResponsibleId");
 
                     b.HasIndex("TenantId");
 
-                    b.HasIndex("TenantId", "ScheduledDateTime");
-
-                    b.ToTable("Appointments");
+                    b.ToTable("AuctionDocuments");
                 });
 
-            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Client", b =>
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Comment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -193,40 +317,41 @@ namespace VoroBidsCrm.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Email")
-                        .HasColumnType("text");
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId");
 
-                    b.HasIndex("TenantId", "Name");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("Clients");
+                    b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Employee", b =>
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.CompanyDocument", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -240,30 +365,27 @@ namespace VoroBidsCrm.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset>("HireDate")
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("ExpirationDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
+                    b.Property<string>("FileUrl")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("PhotoUrl")
-                        .HasColumnType("text");
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("TerminationDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -272,22 +394,60 @@ namespace VoroBidsCrm.Infrastructure.Migrations
 
                     b.HasIndex("TenantId");
 
-                    b.ToTable("Employees");
+                    b.ToTable("CompanyDocuments");
                 });
 
-            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.EmployeeService", b =>
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.DocumentFile", b =>
                 {
-                    b.Property<Guid>("EmployeeId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ServiceId")
+                    b.Property<Guid>("AuctionDocumentId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("EmployeeId", "ServiceId");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("TIMEZONE('utc', NOW())");
 
-                    b.HasIndex("ServiceId");
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.ToTable("EmployeeServices");
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("FileUrl")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UploadedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionDocumentId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("UploadedById");
+
+                    b.ToTable("DocumentFiles");
                 });
 
             modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Identity.Role", b =>
@@ -433,6 +593,63 @@ namespace VoroBidsCrm.Infrastructure.Migrations
                     b.ToTable("UserRoles", (string)null);
                 });
 
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.InternalRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AssigneeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("TIMEZONE('utc', NOW())");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("RequesterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssigneeId");
+
+                    b.HasIndex("AuctionId");
+
+                    b.HasIndex("RequesterId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("InternalRequests");
+                });
+
             modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Notification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -478,119 +695,6 @@ namespace VoroBidsCrm.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Notifications");
-                });
-
-            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Service", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("TIMEZONE('utc', NOW())");
-
-                    b.Property<DateTimeOffset?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<int>("DurationMinutes")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(30);
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<decimal>("Price")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMERIC(10,2)")
-                        .HasDefaultValue(0m);
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId");
-
-                    b.ToTable("Services");
-                });
-
-            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.ServiceRecord", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMERIC(10,2)")
-                        .HasDefaultValue(0m);
-
-                    b.Property<Guid?>("AppointmentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("TIMEZONE('utc', NOW())");
-
-                    b.Property<DateTimeOffset?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("ServiceDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("TIMEZONE('utc', NOW())");
-
-                    b.Property<Guid?>("ServiceId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppointmentId");
-
-                    b.HasIndex("ClientId");
-
-                    b.HasIndex("ServiceId");
-
-                    b.HasIndex("TenantId");
-
-                    b.HasIndex("TenantId", "ServiceDate")
-                        .IsDescending(false, true);
-
-                    b.ToTable("ServiceRecords");
                 });
 
             modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Tenant", b =>
@@ -766,23 +870,28 @@ namespace VoroBidsCrm.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Appointment", b =>
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.ActivityLog", b =>
                 {
-                    b.HasOne("VoroBidsCrm.Domain.Entities.Client", "Client")
+                    b.HasOne("VoroBidsCrm.Domain.Entities.Tenant", null)
                         .WithMany()
-                        .HasForeignKey("ClientId")
+                        .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("VoroBidsCrm.Domain.Entities.Employee", "Employee")
+                    b.HasOne("VoroBidsCrm.Domain.Entities.UserExtension", "User")
                         .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("VoroBidsCrm.Domain.Entities.Service", "Service")
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Auction", b =>
+                {
+                    b.HasOne("VoroBidsCrm.Domain.Entities.UserExtension", "Responsible")
                         .WithMany()
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ResponsibleId");
 
                     b.HasOne("VoroBidsCrm.Domain.Entities.Tenant", null)
                         .WithMany()
@@ -790,14 +899,67 @@ namespace VoroBidsCrm.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Client");
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("Service");
+                    b.Navigation("Responsible");
                 });
 
-            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Client", b =>
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.AuctionChecklist", b =>
+                {
+                    b.HasOne("VoroBidsCrm.Domain.Entities.Auction", "Auction")
+                        .WithMany("Checklists")
+                        .HasForeignKey("AuctionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VoroBidsCrm.Domain.Entities.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Auction");
+                });
+
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.AuctionDocument", b =>
+                {
+                    b.HasOne("VoroBidsCrm.Domain.Entities.Auction", "Auction")
+                        .WithMany("Documents")
+                        .HasForeignKey("AuctionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VoroBidsCrm.Domain.Entities.UserExtension", "Responsible")
+                        .WithMany()
+                        .HasForeignKey("ResponsibleId");
+
+                    b.HasOne("VoroBidsCrm.Domain.Entities.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Auction");
+
+                    b.Navigation("Responsible");
+                });
+
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Comment", b =>
+                {
+                    b.HasOne("VoroBidsCrm.Domain.Entities.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VoroBidsCrm.Domain.Entities.UserExtension", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.CompanyDocument", b =>
                 {
                     b.HasOne("VoroBidsCrm.Domain.Entities.Tenant", null)
                         .WithMany()
@@ -806,34 +968,29 @@ namespace VoroBidsCrm.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Employee", b =>
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.DocumentFile", b =>
                 {
-                    b.HasOne("VoroBidsCrm.Domain.Entities.Tenant", "Tenant")
+                    b.HasOne("VoroBidsCrm.Domain.Entities.AuctionDocument", "AuctionDocument")
+                        .WithMany("Files")
+                        .HasForeignKey("AuctionDocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VoroBidsCrm.Domain.Entities.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Tenant");
-                });
-
-            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.EmployeeService", b =>
-                {
-                    b.HasOne("VoroBidsCrm.Domain.Entities.Employee", "Employee")
-                        .WithMany("Specialties")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VoroBidsCrm.Domain.Entities.Service", "Service")
+                    b.HasOne("VoroBidsCrm.Domain.Entities.UserExtension", "UploadedBy")
                         .WithMany()
-                        .HasForeignKey("ServiceId")
+                        .HasForeignKey("UploadedById")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Employee");
+                    b.Navigation("AuctionDocument");
 
-                    b.Navigation("Service");
+                    b.Navigation("UploadedBy");
                 });
 
             modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Identity.UserRole", b =>
@@ -855,43 +1012,35 @@ namespace VoroBidsCrm.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Service", b =>
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.InternalRequest", b =>
                 {
-                    b.HasOne("VoroBidsCrm.Domain.Entities.Tenant", null)
+                    b.HasOne("VoroBidsCrm.Domain.Entities.UserExtension", "Assignee")
                         .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.ServiceRecord", b =>
-                {
-                    b.HasOne("VoroBidsCrm.Domain.Entities.Appointment", "Appointment")
-                        .WithMany()
-                        .HasForeignKey("AppointmentId");
-
-                    b.HasOne("VoroBidsCrm.Domain.Entities.Client", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VoroBidsCrm.Domain.Entities.Service", "Service")
-                        .WithMany()
-                        .HasForeignKey("ServiceId")
+                        .HasForeignKey("AssigneeId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("VoroBidsCrm.Domain.Entities.Auction", "Auction")
+                        .WithMany("InternalRequests")
+                        .HasForeignKey("AuctionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("VoroBidsCrm.Domain.Entities.UserExtension", "Requester")
+                        .WithMany()
+                        .HasForeignKey("RequesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("VoroBidsCrm.Domain.Entities.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Appointment");
+                    b.Navigation("Assignee");
 
-                    b.Navigation("Client");
+                    b.Navigation("Auction");
 
-                    b.Navigation("Service");
+                    b.Navigation("Requester");
                 });
 
             modelBuilder.Entity("VoroBidsCrm.Domain.Entities.TenantModule", b =>
@@ -935,9 +1084,18 @@ namespace VoroBidsCrm.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Employee", b =>
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Auction", b =>
                 {
-                    b.Navigation("Specialties");
+                    b.Navigation("Checklists");
+
+                    b.Navigation("Documents");
+
+                    b.Navigation("InternalRequests");
+                });
+
+            modelBuilder.Entity("VoroBidsCrm.Domain.Entities.AuctionDocument", b =>
+                {
+                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("VoroBidsCrm.Domain.Entities.Identity.Role", b =>

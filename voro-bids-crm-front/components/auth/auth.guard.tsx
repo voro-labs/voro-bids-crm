@@ -11,7 +11,7 @@ import { LoadingSimple } from "../ui/custom/loading/loading-simple"
 
 interface AuthGuardProps {
   children: React.ReactNode
-  requiredRoles?: ("Admin" | "User")[]
+  requiredRoles?: ("Admin" | "User" | "Legal" | "Finance" | "Management" | "Operational")[]
 }
 
 export function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
