@@ -45,6 +45,15 @@ namespace VoroBidsCrm.API.Controllers
             return StatusCode(response.Status, response);
         }
 
+        [HttpPatch("{id:guid}")]
+        [Authorize(Roles = "Admin, Management")]
+        public async Task<ActionResult<ResponseViewModel<CompanyDocumentDto>>> Update(Guid id, [FromBody] UpdateCompanyDocumentDto dto)
+        {
+            var tenantId = _currentUserService.TenantId;
+            var response = await _documentService.UpdateAsync(id, tenantId, dto);
+            return StatusCode(response.Status, response);
+        }
+
         [HttpDelete("{id:guid}")]
         [Authorize(Roles = "Admin, Management")]
         public async Task<ActionResult<ResponseViewModel<object?>>> Delete(Guid id)

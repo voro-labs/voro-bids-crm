@@ -9,6 +9,7 @@ namespace VoroBidsCrm.Application.Services.Interfaces.App.CompanyDocuments
         Task<ResponseViewModel<List<CompanyDocumentDto>>> GetAllAsync(Guid tenantId, CancellationToken ct = default);
         Task<ResponseViewModel<CompanyDocumentDto>> GetByIdAsync(Guid id, Guid tenantId, CancellationToken ct = default);
         Task<ResponseViewModel<CompanyDocumentDto>> CreateAsync(Guid tenantId, CreateCompanyDocumentDto dto, CancellationToken ct = default);
+        Task<ResponseViewModel<CompanyDocumentDto>> UpdateAsync(Guid id, Guid tenantId, UpdateCompanyDocumentDto dto, CancellationToken ct = default);
         Task<ResponseViewModel<object?>> DeleteAsync(Guid id, Guid tenantId, CancellationToken ct = default);
     }
 }

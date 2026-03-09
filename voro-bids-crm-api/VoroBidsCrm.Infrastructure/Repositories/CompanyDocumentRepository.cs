@@ -38,6 +38,13 @@ namespace VoroBidsCrm.Infrastructure.Repositories
             return document;
         }
 
+        public async Task<CompanyDocument> UpdateAsync(CompanyDocument document, CancellationToken ct = default)
+        {
+            _context.Set<CompanyDocument>().Update(document);
+            await _unitOfWork.CommitAsync(ct);
+            return document;
+        }
+
         public async Task<bool> DeleteAsync(CompanyDocument document, CancellationToken ct = default)
         {
             // Soft delete

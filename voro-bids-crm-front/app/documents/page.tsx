@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { secureApiCall, API_CONFIG } from "@/lib/api"
 import useSWR from "swr"
-import { FileText, Plus, Download, Trash2, Calendar, LayoutDashboard } from "lucide-react"
+import { FileText, Plus, Download, Trash2, Calendar, LayoutDashboard, Pencil } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -44,6 +44,16 @@ export default function DocumentsPage() {
     description: "",
     expirationDate: "",
     file: null as File | null,
+  })
+
+  // Edit state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editingDoc, setEditingDoc] = useState<CompanyDocument | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    description: "",
+    expirationDate: "",
   })
 
   const filteredDocs = documents?.filter(
@@ -137,6 +147,52 @@ export default function DocumentsPage() {
     }
   }
 
+  const openEditModal = (doc: CompanyDocument) => {
+    setEditingDoc(doc)
+    setEditFormData({
+      name: doc.name,
+      description: doc.description || "",
+      expirationDate: doc.expirationDate
+        ? new Date(doc.expirationDate).toISOString().slice(0, 10)
+        : "",
+    })
+    setIsEditModalOpen(true)
+  }
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingDoc || !editFormData.name.trim()) return
+
+    setIsEditing(true)
+    try {
+      const payload = {
+        name: editFormData.name.trim(),
+        description: editFormData.description || null,
+        expirationDate: editFormData.expirationDate
+          ? new Date(editFormData.expirationDate).toISOString()
+          : null,
+      }
+
+      const res = await secureApiCall(`${API_CONFIG.ENDPOINTS.COMPANY_DOCUMENTS}/${editingDoc.id}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.hasError) {
+        toast({ title: "Sucesso", description: "Documento atualizado." })
+        setIsEditModalOpen(false)
+        setEditingDoc(null)
+        mutate()
+      } else {
+        toast({ title: "Erro", description: res.message || "Erro ao atualizar documento.", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Erro", description: "Falha na comunicação com o servidor.", variant: "destructive" })
+    } finally {
+      setIsEditing(false)
+    }
+  }
+
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -211,6 +267,54 @@ export default function DocumentsPage() {
         </div>
       </div>
 
+      {/* Edit Document Dialog */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Editar Documento</DialogTitle>
+            <DialogDescription>
+              Atualize os dados do documento. O arquivo não será alterado.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Nome do Documento <span className="text-red-500">*</span></Label>
+              <Input
+                id="edit-name"
+                value={editFormData.name}
+                onChange={e => setEditFormData({ ...editFormData, name: e.target.value })}
+                placeholder="Ex: Certidão Negativa de Débitos Federais"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Descrição</Label>
+              <Textarea
+                id="edit-description"
+                value={editFormData.description}
+                onChange={e => setEditFormData({ ...editFormData, description: e.target.value })}
+                placeholder="Informações adicionais (opcional)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-expirationDate">Data de Validade/Expiração</Label>
+              <Input
+                id="edit-expirationDate"
+                type="date"
+                value={editFormData.expirationDate}
+                onChange={e => setEditFormData({ ...editFormData, expirationDate: e.target.value })}
+              />
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>Cancelar</Button>
+              <Button type="submit" disabled={isEditing}>
+                {isEditing ? "Salvando..." : "Salvar Alterações"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex items-center space-x-2 mb-6">
         <Input
           placeholder="Buscar documento por nome ou descrição..."
@@ -272,7 +376,9 @@ export default function DocumentsPage() {
                 </CardHeader>
                 <CardContent className="pb-4">
                   {doc.expirationDate ? (
-                    <Badge variant={isExpired ? "destructive" : "secondary"} className="mt-2 font-normal flex items-center gap-1 w-fit">
+                    <Badge
+                      className={`mt-2 font-normal flex items-center gap-1 w-fit border-transparent text-white ${isExpired ? 'bg-destructive hover:bg-destructive/90' : 'bg-green-600 hover:bg-green-700'}`}
+                    >
                       <Calendar className="h-3 w-3" />
                       {isExpired ? "Expirado em " : "Válido até "}
                       {format(new Date(doc.expirationDate), "dd/MM/yyyy", { locale: ptBR })}
@@ -286,9 +392,14 @@ export default function DocumentsPage() {
                     <Download className="mr-2 h-4 w-4" />
                     Visualizar
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10" onClick={() => deleteDocument(doc.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(doc)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 h-8 w-8 p-0" onClick={() => deleteDocument(doc.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardFooter>
               </Card>
             )

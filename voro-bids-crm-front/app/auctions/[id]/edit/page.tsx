@@ -108,16 +108,16 @@ export default function EditAuctionPage({ params }: { params: Promise<{ id: stri
 
   return (
     <AuthGuard requiredRoles={["Admin", "User", "Legal", "Finance", "Management", "Operational"]}>
-      <div className="flex flex-col gap-6 p-6 max-w-3xl mx-auto w-full">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
+      <div className="flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 max-w-3xl mx-auto w-full">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" asChild className="shrink-0">
             <Link href={`/auctions/${auctionId}`}>
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Editar Licitação</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Editar Licitação</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
               Atualize os dados da licitação.
             </p>
           </div>
@@ -203,7 +203,7 @@ export default function EditAuctionPage({ params }: { params: Promise<{ id: stri
                       value={formData.status.toString()}
                       onValueChange={handleStatusChange}
                     >
-                      <SelectTrigger className="w-full md:w-1/2">
+                      <SelectTrigger className="w-full sm:w-1/2">
                         <SelectValue placeholder="Selecione o status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -215,22 +215,20 @@ export default function EditAuctionPage({ params }: { params: Promise<{ id: stri
                   </div>
                 </div>
 
-                <div className="flex justify-end pt-4 border-t border-border">
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <Button variant="outline" type="button" asChild className="w-full sm:w-auto">
-                      <Link href={`/auctions/${auctionId}`}>
-                        Cancelar
-                      </Link>
-                    </Button>
-                    <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-                      {isSubmitting ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Save className="mr-2 h-4 w-4" />
-                      )}
-                      Salvar Alterações
-                    </Button>
-                  </div>
+                <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4 border-t border-border">
+                  <Button variant="outline" type="button" asChild className="w-full sm:w-auto">
+                    <Link href={`/auctions/${auctionId}`}>
+                      Cancelar
+                    </Link>
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+                    {isSubmitting ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="mr-2 h-4 w-4" />
+                    )}
+                    Salvar Alterações
+                  </Button>
                 </div>
 
               </form>

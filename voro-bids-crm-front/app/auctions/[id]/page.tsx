@@ -269,10 +269,10 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
 
   const getStatusBadge = (status: number) => {
     switch (status) {
-      case 0: return <Badge variant="secondary">Em Estruturação</Badge>
-      case 1: return <Badge className="bg-green-600 hover:bg-green-700">Publicado</Badge>
-      case 2: return <Badge variant="destructive">Suspenso</Badge>
-      default: return <Badge variant="outline">Desconhecido</Badge>
+      case 0: return <Badge className="bg-blue-600 hover:bg-blue-700 text-white border-transparent">Em Estruturação</Badge>
+      case 1: return <Badge className="bg-green-600 hover:bg-green-700 text-white border-transparent">Publicado</Badge>
+      case 2: return <Badge className="bg-red-600 hover:bg-red-700 text-white border-transparent">Suspenso</Badge>
+      default: return <Badge className="bg-gray-600 hover:bg-gray-700 text-white border-transparent">Desconhecido</Badge>
     }
   }
 
@@ -307,7 +307,7 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
         </Button>
       </div>
 
-      <Tabs defaultValue="documents" className="w-full">
+      <Tabs defaultValue="overview" className="w-full">
         <TabsList>
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="documents">Documentos</TabsTrigger>
@@ -482,7 +482,7 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
                           <div key={file.id} className="flex items-center justify-between px-4 py-2 hover:bg-muted/50 transition-colors border-b last:border-0">
                             <div className="flex items-center gap-3">
                               <span className="text-sm font-medium">{file.fileName}</span>
-                              <Badge variant="secondary" className="text-[10px]">v{file.version}</Badge>
+                              <Badge className="bg-blue-600 hover:bg-blue-700 text-white border-transparent text-[10px]">v{file.version}</Badge>
                             </div>
                             <div className="flex gap-2">
                               <Button variant="ghost" size="sm" onClick={() => openDocument(file.fileUrl)}>Visualizar</Button>

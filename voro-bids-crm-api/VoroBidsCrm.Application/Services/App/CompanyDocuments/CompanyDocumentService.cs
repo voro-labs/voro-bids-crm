@@ -3,6 +3,7 @@ using VoroBidsCrm.Application.Services.Interfaces.App.CompanyDocuments;
 using VoroBidsCrm.Application.Services.Interfaces.Blob;
 using VoroBidsCrm.Domain.Entities;
 using VoroBidsCrm.Domain.Interfaces.Repositories;
+using VoroBidsCrm.Domain.Interfaces.UnitOfWork;
 using VoroBidsCrm.Shared.ViewModels;
 
 namespace VoroBidsCrm.Application.Services.App.CompanyDocuments
@@ -11,13 +12,16 @@ namespace VoroBidsCrm.Application.Services.App.CompanyDocuments
     {
         private readonly ICompanyDocumentRepository _repository;
         private readonly IBlobService _blobService;
+        private readonly IUnitOfWork _unitOfWork;
 
         public CompanyDocumentService(
             ICompanyDocumentRepository repository,
-            IBlobService blobService)
+            IBlobService blobService,
+            IUnitOfWork unitOfWork)
         {
             _repository = repository;
             _blobService = blobService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ResponseViewModel<List<CompanyDocumentDto>>> GetAllAsync(Guid tenantId, CancellationToken ct = default)
@@ -99,6 +103,34 @@ namespace VoroBidsCrm.Application.Services.App.CompanyDocuments
                 FileUrl = created.FileUrl,
                 ExpirationDate = created.ExpirationDate,
                 CreatedAt = created.CreatedAt
+            };
+
+            return ResponseViewModel<CompanyDocumentDto>.Success(resultDto);
+        }
+
+        public async Task<ResponseViewModel<CompanyDocumentDto>> UpdateAsync(Guid id, Guid tenantId, UpdateCompanyDocumentDto dto, CancellationToken ct = default)
+        {
+            var document = await _repository.GetByIdAsync(id, tenantId, ct);
+            if (document == null)
+                return ResponseViewModel<CompanyDocumentDto>.Fail("Documento não encontrado", null, 404);
+
+            document.Name = dto.Name;
+            document.Description = dto.Description;
+            document.ExpirationDate = dto.ExpirationDate.HasValue
+                ? dto.ExpirationDate.Value.ToUniversalTime()
+                : null;
+            document.UpdatedAt = DateTimeOffset.UtcNow;
+
+            await _repository.UpdateAsync(document, ct);
+
+            var resultDto = new CompanyDocumentDto
+            {
+                Id = document.Id,
+                Name = document.Name,
+                Description = document.Description,
+                FileUrl = document.FileUrl,
+                ExpirationDate = document.ExpirationDate,
+                CreatedAt = document.CreatedAt
             };
 
             return ResponseViewModel<CompanyDocumentDto>.Success(resultDto);
