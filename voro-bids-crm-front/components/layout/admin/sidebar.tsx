@@ -121,7 +121,7 @@ export function Sidebar({ isOpen, onClose, tenant }: SidebarProps) {
                 onValueChange={handleTenantChange}
               >
                 <SelectTrigger className="w-full bg-background/50 border-accent/20 hover:border-accent/40 transition-colors">
-                  <SelectValue placeholder="Selecione o salão" />
+                  <SelectValue placeholder="Selecione o leiloeiro" />
                 </SelectTrigger>
                 <SelectContent>
                   {user.tenants.map((t) => (

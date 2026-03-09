@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff, AlertCircle, Scissors, Loader2 } from "lucide-react"
+import { Eye, EyeOff, AlertCircle, PiggyBank, Loader2 } from "lucide-react"
 import { useAuth } from "@/contexts/auth.context"
 import { useSignIn } from "@/hooks/use-sign-in.hook"
 import { SignInDto } from "@/types/DTOs/sign-in.interface"
@@ -77,7 +77,7 @@ export default function SignInPage() {
         {/* Brand */}
         <div className="mb-8 flex flex-col items-center gap-3">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
-            <Scissors className="h-7 w-7" />
+            <PiggyBank className="h-7 w-7" />
           </div>
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground">Bids CRM</h1>

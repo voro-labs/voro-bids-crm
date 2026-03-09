@@ -11,24 +11,24 @@ import { TenantThemeProvider } from "@/contexts/tenant-theme.context"
 const _geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Bids CRM - Gerenciamento de Clientes',
-  description: 'Sistema de gerenciamento de clientes e servicos para saloes de beleza',
+  title: 'Bids CRM - Gestão de Licitações e Leilões',
+  description: 'Sistema para gestão de licitações e leilões, com controle de clientes, acompanhamento de editais, propostas e automação do processo de participação em licitações.',
   keywords: [
-    "sistema para salão de beleza",
-    "CRM para salão de beleza",
-    "software para salão de beleza",
-    "gestão de clientes para salão",
-    "sistema de agendamento online para salão",
-    "controle de clientes salão",
-    "gerenciamento de serviços de beleza",
-    "automação para salão de beleza",
-    "sistema para cabeleireiro",
-    "sistema para barbearia",
-    "sistema para clínica estética",
-    "controle financeiro para salão",
-    "fidelização de clientes para salão",
-    "marketing para salão de beleza",
-    "aplicativo para salão de beleza"
+    "sistema para gestão de licitações",
+    "CRM para licitações",
+    "software para gestão de licitações",
+    "sistema para leilões",
+    "gestão de propostas e lances",
+    "controle de editais de licitação",
+    "gerenciamento de clientes para licitações",
+    "automação de processos de licitação",
+    "acompanhamento de licitações",
+    "sistema para empresas que participam de licitações",
+    "controle de leilões e arremates",
+    "gestão de oportunidades de licitação",
+    "software para acompanhamento de editais",
+    "CRM para empresas de leilão",
+    "plataforma de gestão de licitações"
   ],
   generator: "vorolabs.app",
   icons: {
