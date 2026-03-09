@@ -22,16 +22,12 @@ namespace VoroBidsCrm.Infrastructure.Blob
         }
 
         public async Task<string> UploadAsync(
-            string blobName,
+            string fileName,
             Stream stream,
             string contentType,
             CancellationToken ct = default)
         {
-            if (string.IsNullOrWhiteSpace(blobName))
-                throw new ArgumentException("Blob name cannot be empty");
-
-            var encodedName = Uri.EscapeDataString(blobName);
-            var url = $"https://blob.vercel-storage.com/{encodedName}";
+            var url = $"https://blob.vercel-storage.com/{_config.BlobName}/{fileName}";
 
             using var request = new HttpRequestMessage(HttpMethod.Put, url);
 

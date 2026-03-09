@@ -104,15 +104,15 @@ export default function DocumentsPage() {
 
     const openDocument = async (url: string) => {
         try {
-            // Usamos nosso proxy /api/blob/proxy para acessar blobs privados via Vercel
             const response = await fetch(`/api/blob/proxy?url=${encodeURIComponent(url)}`)
-            const data = await response.json()
-
-            if (response.ok && data.url) {
-                window.open(data.url, "_blank")
-            } else {
-                toast({ title: "Erro", description: data.error || "Não foi possível resgatar o arquivo.", variant: "destructive" })
+            if (!response.ok) {
+                throw new Error("Falha ao buscar arquivo")
             }
+
+            const blob = await response.blob()
+            const fileUrl = URL.createObjectURL(blob)
+
+            window.open(fileUrl, "_blank")
         } catch (error) {
             toast({ title: "Erro", description: "Falha na comunicação com o proxy do documento.", variant: "destructive" })
         }

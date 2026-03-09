@@ -8,61 +8,54 @@ using VoroBidsCrm.Shared.ViewModels;
 namespace VoroBidsCrm.API.Controllers
 {
     [ApiController]
-    [Route("api/v{version:version}/auctions/{auctionId:guid}/documents")]
+    [Route("api/v{version:version}/[controller]/{auctionId:guid}")]
     [Tags("Auction Documents")]
     [Authorize]
-    public class AuctionDocumentsController : ControllerBase
+    public class AuctionDocumentsController(
+        IAuctionDocumentService documentService,
+        ICurrentUserService currentUserService) : ControllerBase
     {
-        private readonly IAuctionDocumentService _documentService;
-        private readonly ICurrentUserService _currentUserService;
-
-        public AuctionDocumentsController(
-            IAuctionDocumentService documentService,
-            ICurrentUserService currentUserService)
-        {
-            _documentService = documentService;
-            _currentUserService = currentUserService;
-        }
+        private readonly IAuctionDocumentService _documentService = documentService;
+        private readonly ICurrentUserService _currentUserService = currentUserService;
 
         [HttpGet]
-        public async Task<ActionResult<ResponseViewModel<List<AuctionDocumentDto>>>> GetAllByAuction(Guid auctionId, CancellationToken ct)
+        public async Task<ActionResult<ResponseViewModel<List<AuctionDocumentDto>>>> GetAllByAuction(Guid auctionId)
         {
             var tenantId = _currentUserService.TenantId;
-            var response = await _documentService.GetAllByAuctionAsync(auctionId, tenantId, ct);
+            var response = await _documentService.GetAllByAuctionAsync(auctionId, tenantId);
             return StatusCode(response.Status, response);
         }
 
         [HttpPost("requirements")]
-        public async Task<ActionResult<ResponseViewModel<AuctionDocumentDto>>> CreateRequirement([FromBody] CreateAuctionDocumentDto dto, CancellationToken ct)
+        public async Task<ActionResult<ResponseViewModel<AuctionDocumentDto>>> CreateRequirement([FromBody] CreateAuctionDocumentDto dto)
         {
             var tenantId = _currentUserService.TenantId;
-            var response = await _documentService.CreateRequirementAsync(tenantId, dto, ct);
+            var response = await _documentService.CreateRequirementAsync(tenantId, dto);
             return StatusCode(response.Status, response);
         }
 
         [HttpPost("upload")]
-        [Consumes("multipart/form-data")]
-        public async Task<ActionResult<ResponseViewModel<DocumentFileDto>>> UploadFile([FromForm] UploadDocumentFileDto dto, CancellationToken ct)
+        public async Task<ActionResult<ResponseViewModel<DocumentFileDto>>> UploadFile([FromForm] UploadDocumentFileDto dto)
         {
             var tenantId = _currentUserService.TenantId;
             var userId = _currentUserService.UserId;
-            var response = await _documentService.UploadFileAsync(tenantId, userId, dto, ct);
+            var response = await _documentService.UploadFileAsync(tenantId, userId, dto);
             return StatusCode(response.Status, response);
         }
 
         [HttpDelete("requirements/{id:guid}")]
-        public async Task<ActionResult<ResponseViewModel<object?>>> DeleteRequirement(Guid id, CancellationToken ct)
+        public async Task<ActionResult<ResponseViewModel<object?>>> DeleteRequirement(Guid id)
         {
             var tenantId = _currentUserService.TenantId;
-            var response = await _documentService.DeleteRequirementAsync(id, tenantId, ct);
+            var response = await _documentService.DeleteRequirementAsync(id, tenantId);
             return StatusCode(response.Status, response);
         }
 
         [HttpDelete("files/{fileId:guid}")]
-        public async Task<ActionResult<ResponseViewModel<object?>>> DeleteFile(Guid fileId, CancellationToken ct)
+        public async Task<ActionResult<ResponseViewModel<object?>>> DeleteFile(Guid fileId)
         {
             var tenantId = _currentUserService.TenantId;
-            var response = await _documentService.DeleteFileAsync(fileId, tenantId, ct);
+            var response = await _documentService.DeleteFileAsync(fileId, tenantId);
             return StatusCode(response.Status, response);
         }
     }

@@ -114,11 +114,7 @@ namespace VoroBidsCrm.Application.Services.App.Auctions
             string fileUrl;
             try
             {
-                fileUrl = await _blobService.UploadAsync(
-                    blobName: $"auction-documents/{tenantId}/{requirement.AuctionId}/{fileName}",
-                    stream: stream,
-                    contentType: dto.File.ContentType,
-                    ct: ct);
+                fileUrl = await _blobService.UploadAsync(fileName, stream, dto.File.ContentType, ct: ct);
             }
             catch (Exception ex)
             {

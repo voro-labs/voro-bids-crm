@@ -60,7 +60,7 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
   )
 
   const { data: documents, isLoading: isDocsLoading, mutate: mutateDocs } = useSWR<AuctionDocument[]>(
-    `${API_CONFIG.ENDPOINTS.AUCTIONS}/${auctionId}/documents`,
+    `${API_CONFIG.ENDPOINTS.AUCTION_DOCUMENTS}/${auctionId}`,
     fetchDocs
   )
 
@@ -81,7 +81,7 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
 
     setIsReqSubmitting(true)
     try {
-      const res = await secureApiCall(`${API_CONFIG.ENDPOINTS.AUCTIONS}/${auctionId}/documents/requirements`, {
+      const res = await secureApiCall(`${API_CONFIG.ENDPOINTS.AUCTION_DOCUMENTS}/${auctionId}/requirements`, {
         method: "POST",
         body: JSON.stringify({
           auctionId,
@@ -116,7 +116,7 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
       formPayload.append("AuctionDocumentId", activeReqId)
       formPayload.append("File", selectedFile)
 
-      const res = await secureApiCall(`${API_CONFIG.ENDPOINTS.AUCTIONS}/${auctionId}/documents/upload`, {
+      const res = await secureApiCall(`${API_CONFIG.ENDPOINTS.AUCTION_DOCUMENTS}/${auctionId}/upload`, {
         method: "POST",
         body: formPayload
       })
@@ -140,13 +140,14 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
   const openDocument = async (url: string) => {
     try {
       const response = await fetch(`/api/blob/proxy?url=${encodeURIComponent(url)}`)
-      const data = await response.json()
-
-      if (response.ok && data.url) {
-        window.open(data.url, "_blank")
-      } else {
-        toast({ title: "Erro", description: data.error || "Não foi possível resgatar o arquivo.", variant: "destructive" })
+      if (!response.ok) {
+        throw new Error("Falha ao buscar arquivo")
       }
+
+      const blob = await response.blob()
+      const fileUrl = URL.createObjectURL(blob)
+
+      window.open(fileUrl, "_blank")
     } catch {
       toast({ title: "Erro", description: "Falha no proxy.", variant: "destructive" })
     }
@@ -155,7 +156,7 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
   const deleteReq = async (id: string) => {
     if (!confirm("Tem certeza que deseja deletar este requisito e todos os seus arquivos?")) return
     try {
-      const res = await secureApiCall(`${API_CONFIG.ENDPOINTS.AUCTIONS}/${auctionId}/documents/requirements/${id}`, { method: "DELETE" })
+      const res = await secureApiCall(`${API_CONFIG.ENDPOINTS.AUCTION_DOCUMENTS}/${auctionId}/requirements/${id}`, { method: "DELETE" })
       if (!res.hasError) {
         toast({ title: "Sucesso", description: "Requisito excluído." })
         mutateDocs()
@@ -168,7 +169,7 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
   const deleteFile = async (fileId: string) => {
     if (!confirm("Deletar arquivo?")) return
     try {
-      const res = await secureApiCall(`${API_CONFIG.ENDPOINTS.AUCTIONS}/${auctionId}/documents/files/${fileId}`, { method: "DELETE" })
+      const res = await secureApiCall(`${API_CONFIG.ENDPOINTS.AUCTION_DOCUMENTS}/${auctionId}/files/${fileId}`, { method: "DELETE" })
       if (!res.hasError) {
         toast({ title: "Sucesso", description: "Arquivo excluído." })
         mutateDocs()

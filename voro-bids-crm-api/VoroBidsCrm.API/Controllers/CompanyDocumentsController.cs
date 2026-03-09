@@ -4,6 +4,7 @@ using VoroBidsCrm.Application.DTOs.CompanyDocuments;
 using VoroBidsCrm.Application.Services.Interfaces;
 using VoroBidsCrm.Application.Services.Interfaces.App.CompanyDocuments;
 using VoroBidsCrm.Shared.Constants;
+using VoroBidsCrm.Shared.Extensions;
 using VoroBidsCrm.Shared.ViewModels;
 
 namespace VoroBidsCrm.API.Controllers
@@ -12,53 +13,44 @@ namespace VoroBidsCrm.API.Controllers
     [Tags("Company Documents")]
     [ApiController]
     [Authorize]
-    public class CompanyDocumentsController : ControllerBase
+    public class CompanyDocumentsController(
+        ICompanyDocumentService documentService,
+        ICurrentUserService currentUserService) : ControllerBase
     {
-        private readonly ICompanyDocumentService _documentService;
-        private readonly ICurrentUserService _currentUserService;
-
-        public CompanyDocumentsController(
-            ICompanyDocumentService documentService,
-            ICurrentUserService currentUserService)
-        {
-            _documentService = documentService;
-            _currentUserService = currentUserService;
-        }
+        private readonly ICompanyDocumentService _documentService = documentService;
+        private readonly ICurrentUserService _currentUserService = currentUserService;
 
         [HttpGet]
-        public async Task<ActionResult<ResponseViewModel<List<CompanyDocumentDto>>>> GetAll(CancellationToken ct)
+        public async Task<ActionResult<ResponseViewModel<List<CompanyDocumentDto>>>> GetAll()
         {
             var tenantId = _currentUserService.TenantId;
-            var response = await _documentService.GetAllAsync(tenantId, ct);
+            var response = await _documentService.GetAllAsync(tenantId);
             return StatusCode(response.Status, response);
         }
 
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<ResponseViewModel<CompanyDocumentDto>>> GetById(Guid id, CancellationToken ct)
+        public async Task<ActionResult<ResponseViewModel<CompanyDocumentDto>>> GetById(Guid id)
         {
             var tenantId = _currentUserService.TenantId;
-            var response = await _documentService.GetByIdAsync(id, tenantId, ct);
+            var response = await _documentService.GetByIdAsync(id, tenantId);
             return StatusCode(response.Status, response);
         }
 
         [HttpPost]
-        [Authorize(Roles = RoleConstant.Admin + "," + RoleConstant.Management)]
-        [Consumes("multipart/form-data")]
-        public async Task<ActionResult<ResponseViewModel<CompanyDocumentDto>>> Create(
-            [FromForm] CreateCompanyDocumentDto dto,
-            CancellationToken ct)
+        [Authorize(Roles = "Admin, Management")]
+        public async Task<ActionResult<ResponseViewModel<CompanyDocumentDto>>> Create([FromForm] CreateCompanyDocumentDto dto)
         {
             var tenantId = _currentUserService.TenantId;
-            var response = await _documentService.CreateAsync(tenantId, dto, ct);
+            var response = await _documentService.CreateAsync(tenantId, dto);
             return StatusCode(response.Status, response);
         }
 
         [HttpDelete("{id:guid}")]
-        [Authorize(Roles = RoleConstant.Admin + "," + RoleConstant.Management)]
-        public async Task<ActionResult<ResponseViewModel<object?>>> Delete(Guid id, CancellationToken ct)
+        [Authorize(Roles = "Admin, Management")]
+        public async Task<ActionResult<ResponseViewModel<object?>>> Delete(Guid id)
         {
             var tenantId = _currentUserService.TenantId;
-            var response = await _documentService.DeleteAsync(id, tenantId, ct);
+            var response = await _documentService.DeleteAsync(id, tenantId);
             return StatusCode(response.Status, response);
         }
     }
