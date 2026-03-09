@@ -10,8 +10,8 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
-  Scissors,
-  Calendar,
+  Gavel,
+  FileText,
 } from "lucide-react"
 import { toTitleCase } from "@/lib/utils"
 import {
@@ -30,32 +30,16 @@ const navItems = [
     roles: ["Admin", "User"]
   },
   {
-    title: "Agendamentos",
-    href: "/appointments",
-    icon: Calendar,
-    roles: ["Admin", "User"],
-    moduleId: 2 // Scheduling
+    title: "Licitações",
+    href: "/auctions",
+    icon: Gavel,
+    roles: ["Admin", "User", "Legal", "Finance", "Management", "Operational"]
   },
   {
-    title: "Clientes",
-    href: "/clients",
-    icon: Users,
-    roles: ["Admin", "User"],
-    moduleId: 1 // Clients
-  },
-  {
-    title: "Serviços",
-    href: "/services",
-    icon: Scissors,
-    roles: ["Admin", "User"],
-    moduleId: 3 // Services
-  },
-  {
-    title: "Funcionários",
-    href: "/employees",
-    icon: Users,
-    roles: ["Admin", "User"],
-    moduleId: 4 // Employees
+    title: "Documentos",
+    href: "/documents",
+    icon: FileText,
+    roles: ["Admin", "User", "Legal", "Finance", "Management", "Operational"]
   },
   {
     title: "Configurações",
@@ -175,12 +159,12 @@ export function Sidebar({ isOpen, onClose, tenant }: SidebarProps) {
             if (!item.roles.includes((user?.roles?.map((r) => r.name) ?? [])[0]))
               return null;
 
-            if (item.moduleId) {
+            if ('moduleId' in item && item.moduleId) {
               const mod = (modulesData as any[])?.find(m => m.module === item.moduleId);
               if (mod && !mod.isEnabled) return null;
             }
 
-            const modConfig = item.moduleId ? (modulesData as any[])?.find(m => m.module === item.moduleId) : null;
+            const modConfig = 'moduleId' in item && item.moduleId ? (modulesData as any[])?.find(m => m.module === item.moduleId) : null;
             let displayTitle = item.title;
 
             if (modConfig?.configuration) {

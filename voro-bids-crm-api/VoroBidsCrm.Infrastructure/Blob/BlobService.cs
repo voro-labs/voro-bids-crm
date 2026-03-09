@@ -38,7 +38,7 @@ namespace VoroBidsCrm.Infrastructure.Blob
             request.Headers.Authorization =
                 new AuthenticationHeaderValue("Bearer", _config.Token);
 
-            request.Headers.Add("x-vercel-blob-access", "public");
+            request.Headers.Add("x-vercel-blob-access", "private");
 
             request.Content = new StreamContent(stream);
             request.Content.Headers.ContentType =

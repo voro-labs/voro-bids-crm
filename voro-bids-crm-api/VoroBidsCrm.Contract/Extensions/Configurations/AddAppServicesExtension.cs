@@ -2,9 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using VoroBidsCrm.Application.Services;
 using VoroBidsCrm.Application.Services.App.Auctions;
+using VoroBidsCrm.Application.Services.App.CompanyDocuments;
 using VoroBidsCrm.Application.Services.Identity;
 using VoroBidsCrm.Application.Services.Interfaces;
 using VoroBidsCrm.Application.Services.Interfaces.App.Auctions;
+using VoroBidsCrm.Application.Services.Interfaces.App.CompanyDocuments;
 using VoroBidsCrm.Application.Services.Interfaces.Blob;
 using VoroBidsCrm.Application.Services.Interfaces.Email;
 using VoroBidsCrm.Application.Services.Interfaces.Identity;
@@ -53,6 +55,8 @@ namespace VoroBidsCrm.Contract.Extensions.Configurations
             services.AddScoped<IAuctionRepository, AuctionRepository>();
             services.AddScoped<IAuctionDocumentRepository, AuctionDocumentRepository>();
             services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
+            services.AddScoped<ICompanyDocumentRepository, CompanyDocumentRepository>();
+            services.AddScoped<IDocumentFileRepository, DocumentFileRepository>();
             #endregion
 
             #region Identity Services
@@ -64,6 +68,8 @@ namespace VoroBidsCrm.Contract.Extensions.Configurations
             services.AddScoped<ITenantService, TenantService>();
             services.AddScoped<ITenantModuleService, TenantModuleService>();
             services.AddScoped<IAuctionService, AuctionService>();
+            services.AddScoped<ICompanyDocumentService, CompanyDocumentService>();
+            services.AddScoped<IAuctionDocumentService, AuctionDocumentService>();
             #endregion
 
             return services;
