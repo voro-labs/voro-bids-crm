@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: "POST"
       })
 
-      if (result.hasError) throw new Error(result.message ?? "Erro ao trocar de salão")
+      if (result.hasError) throw new Error(result.message ?? "Erro ao trocar de leiloeiro")
 
       if (result.data?.token) {
         login(result.data.token, result.data.tenants)
@@ -129,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.location.reload()
       }
     } catch (err) {
-      console.error("Erro ao trocar de salão:", err)
+      console.error("Erro ao trocar de leiloeiro:", err)
       throw err
     }
   }

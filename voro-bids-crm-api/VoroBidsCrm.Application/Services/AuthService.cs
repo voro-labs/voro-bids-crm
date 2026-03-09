@@ -97,7 +97,7 @@ namespace VoroBidsCrm.Application.Services
 
             // Verificar se o usuário pertence ao tenant
             var userTenant = user.UserTenants?.FirstOrDefault(ut => ut.TenantId == tenantId)
-                ?? throw new UnauthorizedAccessException("Usuário não tem acesso a este salão.");
+                ?? throw new UnauthorizedAccessException("Usuário não tem acesso a este leiloeiro.");
 
             var roles = await _userService.GetRolesAsync(user);
 
