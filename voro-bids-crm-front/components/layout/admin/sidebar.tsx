@@ -27,7 +27,7 @@ const navItems = [
     title: "Dashboard",
     href: "/",
     icon: LayoutDashboard,
-    roles: ["Admin", "User"]
+    roles: ["Admin", "User", "Legal", "Finance", "Management", "Operational"]
   },
   {
     title: "Licitações",
@@ -74,6 +74,14 @@ export function Sidebar({ isOpen, onClose, tenant }: SidebarProps) {
     switch (roles[0]) {
       case "Admin":
         return { text: "Administrador", class: "bg-blue-100 text-blue-800" }
+      case "Legal":
+        return { text: "Legal", class: "bg-blue-100 text-blue-800" }
+      case "Finance":
+        return { text: "Financeiro", class: "bg-blue-100 text-blue-800" }
+      case "Management":
+        return { text: "Gerenciamento", class: "bg-blue-100 text-blue-800" }
+      case "Operational":
+        return { text: "Operacional", class: "bg-blue-100 text-blue-800" }
       default:
         return { text: "Usuário", class: "bg-green-100 text-green-800" }
     }
