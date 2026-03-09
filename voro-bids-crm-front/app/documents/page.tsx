@@ -5,6 +5,8 @@ import { secureApiCall, API_CONFIG } from "@/lib/api"
 import useSWR from "swr"
 import { FileText, Plus, Download, Trash2, Calendar, LayoutDashboard, Pencil } from "lucide-react"
 
+import { DocumentViewerModal } from "@/components/ui/custom/document-viewer-modal"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -38,6 +40,11 @@ export default function DocumentsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+
+  // Viewer state
+  const [isViewerOpen, setIsViewerOpen] = useState(false)
+  const [viewerUrl, setViewerUrl] = useState<string | null>(null)
+  const [viewerFileName, setViewerFileName] = useState<string | undefined>(undefined)
 
   const [formData, setFormData] = useState({
     name: "",
@@ -112,20 +119,10 @@ export default function DocumentsPage() {
     }
   }
 
-  const openDocument = async (url: string) => {
-    try {
-      const response = await fetch(`/api/blob/proxy?url=${encodeURIComponent(url)}`)
-      if (!response.ok) {
-        throw new Error("Falha ao buscar arquivo")
-      }
-
-      const blob = await response.blob()
-      const fileUrl = URL.createObjectURL(blob)
-
-      window.open(fileUrl, "_blank")
-    } catch (error) {
-      toast({ title: "Erro", description: "Falha na comunicação com o proxy do documento.", variant: "destructive" })
-    }
+  const openDocument = (url: string, name?: string) => {
+    setViewerUrl(url)
+    setViewerFileName(name)
+    setIsViewerOpen(true)
   }
 
   const deleteDocument = async (id: string) => {
@@ -194,15 +191,21 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
+    <div className="flex-1 space-y-4 p-4 sm:p-8 pt-4 sm:pt-6">
+      <DocumentViewerModal
+        open={isViewerOpen}
+        onClose={() => setIsViewerOpen(false)}
+        url={viewerUrl}
+        fileName={viewerFileName}
+      />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Documentos Institucionais</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Documentos Institucionais</h2>
+          <p className="text-muted-foreground text-sm mt-0.5">
             Gerencie certidões, alvarás e atestados essenciais para licitações.
           </p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center">
           <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -315,12 +318,12 @@ export default function DocumentsPage() {
         </DialogContent>
       </Dialog>
 
-      <div className="flex items-center space-x-2 mb-6">
+      <div className="flex items-center mb-4">
         <Input
           placeholder="Buscar documento por nome ou descrição..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-sm"
+          className="w-full max-w-sm"
         />
       </div>
 
@@ -354,7 +357,7 @@ export default function DocumentsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {filteredDocs?.map((doc) => {
             const isExpired = doc.expirationDate && new Date(doc.expirationDate) < new Date()
             return (
@@ -388,7 +391,7 @@ export default function DocumentsPage() {
                   )}
                 </CardContent>
                 <CardFooter className="flex justify-between items-center bg-muted/50 py-3 rounded-b-lg border-t">
-                  <Button variant="ghost" size="sm" onClick={() => openDocument(doc.fileUrl)}>
+                  <Button variant="ghost" size="sm" onClick={() => openDocument(doc.fileUrl, doc.name)}>
                     <Download className="mr-2 h-4 w-4" />
                     Visualizar
                   </Button>

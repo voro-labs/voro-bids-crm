@@ -364,22 +364,22 @@ export default function ConfiguracoesPage() {
         </div>
 
         <Tabs defaultValue="geral" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="geral">
-              <Building2 className="mr-2 h-4 w-4" />
-              Empresa
+          <TabsList className="mb-4 w-full sm:w-auto flex overflow-x-auto flex-nowrap">
+            <TabsTrigger value="geral" className="shrink-0">
+              <Building2 className="mr-1.5 h-4 w-4" />
+              <span className="hidden sm:inline">Empresa</span>
             </TabsTrigger>
-            <TabsTrigger value="aparencia">
-              <Palette className="mr-2 h-4 w-4" />
-              Aparência
+            <TabsTrigger value="aparencia" className="shrink-0">
+              <Palette className="mr-1.5 h-4 w-4" />
+              <span className="hidden sm:inline">Aparência</span>
             </TabsTrigger>
-            <TabsTrigger value="modulos">
-              <LayoutGrid className="mr-2 h-4 w-4" />
-              Módulos
+            <TabsTrigger value="modulos" className="shrink-0">
+              <LayoutGrid className="mr-1.5 h-4 w-4" />
+              <span className="hidden sm:inline">Módulos</span>
             </TabsTrigger>
-            <TabsTrigger value="exportar">
-              <Download className="mr-2 h-4 w-4" />
-              Exportar
+            <TabsTrigger value="exportar" className="shrink-0">
+              <Download className="mr-1.5 h-4 w-4" />
+              <span className="hidden sm:inline">Exportar</span>
             </TabsTrigger>
           </TabsList>
 
@@ -572,7 +572,7 @@ export default function ConfiguracoesPage() {
                   </div>
 
                   {/* Custom picker */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div className="flex flex-col gap-2">
                       <Label htmlFor="primary-color">Cor Primária</Label>
                       <div className="flex items-center gap-2">
@@ -696,16 +696,16 @@ export default function ConfiguracoesPage() {
                     ))}
                   </div>
                   {/* Live preview */}
-                  <div className="mt-3 flex items-center gap-3">
+                  <div className="mt-3 flex items-center gap-3 flex-wrap overflow-hidden">
                     <div
-                      className="h-8 w-20 bg-primary opacity-90 transition-all"
+                      className="h-8 flex-1 max-w-20 min-w-0 bg-primary opacity-90 transition-all"
                       style={{ borderRadius: `var(--radius)` }}
                     />
                     <div
-                      className="h-8 w-20 border-2 border-primary transition-all"
+                      className="h-8 flex-1 max-w-20 min-w-0 border-2 border-primary transition-all"
                       style={{ borderRadius: `var(--radius)` }}
                     />
-                    <span className="text-xs text-muted-foreground">Pré-visualização</span>
+                    <span className="text-xs text-muted-foreground shrink-0">Pré-visualização</span>
                   </div>
                 </div>
               </CardContent>

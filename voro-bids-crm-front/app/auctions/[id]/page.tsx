@@ -5,6 +5,7 @@ import { secureApiCall, API_CONFIG } from "@/lib/api"
 import useSWR from "swr"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, FileText, Upload, Trash2, ShieldAlert } from "lucide-react"
+import { DocumentViewerModal } from "@/components/ui/custom/document-viewer-modal"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -98,6 +99,11 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
   const [newTaskName, setNewTaskName] = useState("")
   const [isAddingTask, setIsAddingTask] = useState(false)
 
+  // Document viewer state
+  const [isViewerOpen, setIsViewerOpen] = useState(false)
+  const [viewerUrl, setViewerUrl] = useState<string | null>(null)
+  const [viewerFileName, setViewerFileName] = useState<string | undefined>(undefined)
+
   const handleCreateRequirement = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!reqFormData.name) return
@@ -160,20 +166,10 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
     }
   }
 
-  const openDocument = async (url: string) => {
-    try {
-      const response = await fetch(`/api/blob/proxy?url=${encodeURIComponent(url)}`)
-      if (!response.ok) {
-        throw new Error("Falha ao buscar arquivo")
-      }
-
-      const blob = await response.blob()
-      const fileUrl = URL.createObjectURL(blob)
-
-      window.open(fileUrl, "_blank")
-    } catch {
-      toast({ title: "Erro", description: "Falha no proxy.", variant: "destructive" })
-    }
+  const openDocument = (url: string, name?: string) => {
+    setViewerUrl(url)
+    setViewerFileName(name)
+    setIsViewerOpen(true)
   }
 
   const deleteReq = async (id: string) => {
@@ -289,6 +285,12 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
+      <DocumentViewerModal
+        open={isViewerOpen}
+        onClose={() => setIsViewerOpen(false)}
+        url={viewerUrl}
+        fileName={viewerFileName}
+      />
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-4">
           <Button variant="outline" size="icon" onClick={() => router.push('/auctions')}>
@@ -485,7 +487,7 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
                               <Badge className="bg-blue-600 hover:bg-blue-700 text-white border-transparent text-[10px]">v{file.version}</Badge>
                             </div>
                             <div className="flex gap-2">
-                              <Button variant="ghost" size="sm" onClick={() => openDocument(file.fileUrl)}>Visualizar</Button>
+                              <Button variant="ghost" size="sm" onClick={() => openDocument(file.fileUrl, file.fileName)}>Visualizar</Button>
                               <Button variant="ghost" size="sm" className="text-destructive px-2" onClick={() => deleteFile(file.id)}>
                                 <Trash2 className="h-3 w-3" />
                               </Button>

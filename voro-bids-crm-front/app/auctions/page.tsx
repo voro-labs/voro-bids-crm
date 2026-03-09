@@ -48,15 +48,15 @@ export default function AuctionsPage() {
 
   return (
     <AuthGuard requiredRoles={["Admin", "User", "Legal", "Finance", "Management", "Operational"]}>
-      <div className="flex flex-col gap-6 p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:gap-6 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Licitações</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Licitações</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
               Gerencie suas concorrências e licitações ativas.
             </p>
           </div>
-          <Button asChild>
+          <Button asChild className="w-full sm:w-auto">
             <Link href="/auctions/new" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Nova Licitação
@@ -64,8 +64,8 @@ export default function AuctionsPage() {
           </Button>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-card p-4 rounded-xl border border-border mt-2 shadow-sm">
-          <div className="relative w-full sm:w-96">
+        <div className="flex flex-col gap-3 bg-card p-3 sm:p-4 rounded-xl border border-border mt-2 shadow-sm">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Buscar por título ou órgão..."
@@ -75,10 +75,11 @@ export default function AuctionsPage() {
             />
           </div>
 
-          <div className="w-full sm:w-auto flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 hide-scrollbar">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant={statusFilter === "all" ? "default" : "outline"}
               size="sm"
+              className="shrink-0"
               onClick={() => setStatusFilter("all")}
             >
               Todas
@@ -86,6 +87,7 @@ export default function AuctionsPage() {
             <Button
               variant={statusFilter === "1" ? "default" : "outline"}
               size="sm"
+              className="shrink-0"
               onClick={() => setStatusFilter("1")}
             >
               Publicadas
@@ -93,9 +95,11 @@ export default function AuctionsPage() {
             <Button
               variant={statusFilter === "0" ? "default" : "outline"}
               size="sm"
+              className="shrink-0"
               onClick={() => setStatusFilter("0")}
             >
-              Em Estruturação
+              <span className="hidden xs:inline">Em Estruturação</span>
+              <span className="xs:hidden">Estruturação</span>
             </Button>
           </div>
         </div>
@@ -154,9 +158,10 @@ export default function AuctionsPage() {
                       </CardDescription>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <Button variant="outline" size="sm" className="hidden sm:flex" asChild>
+                      <Button variant="outline" size="sm" asChild>
                         <Link href={`/auctions/${auction.id}`}>
-                          <Eye className="mr-2 h-4 w-4" /> Detalhes
+                          <Eye className="mr-1.5 h-4 w-4" />
+                          <span className="hidden sm:inline">Detalhes</span>
                         </Link>
                       </Button>
                       <Button variant="outline" size="icon" asChild>
