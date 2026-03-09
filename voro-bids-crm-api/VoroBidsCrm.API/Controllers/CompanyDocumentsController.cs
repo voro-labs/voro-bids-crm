@@ -8,9 +8,9 @@ using VoroBidsCrm.Shared.ViewModels;
 
 namespace VoroBidsCrm.API.Controllers
 {
-    [ApiController]
-    [Route("api/v1/tenant/me/company-documents")]
+    [Route("api/v{version:version}/[controller]")]
     [Tags("Company Documents")]
+    [ApiController]
     [Authorize]
     public class CompanyDocumentsController : ControllerBase
     {

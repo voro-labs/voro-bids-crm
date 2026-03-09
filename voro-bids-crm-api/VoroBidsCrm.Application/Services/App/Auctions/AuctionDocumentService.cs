@@ -72,6 +72,7 @@ namespace VoroBidsCrm.Application.Services.App.Auctions
             };
 
             await _reqRepository.AddAsync(req);
+            await _unitOfWork.CommitAsync(ct);
 
             var result = new AuctionDocumentDto
             {
@@ -163,7 +164,8 @@ namespace VoroBidsCrm.Application.Services.App.Auctions
                 return ResponseViewModel<object?>.Fail("Requisito não encontrado");
             }
 
-            await _reqRepository.DeleteAsync(requirement);
+            _reqRepository.Delete(requirement);
+            await _unitOfWork.CommitAsync(ct);
             return ResponseViewModel<object?>.SuccessWithMessage("Requisito deletado", null);
         }
 
@@ -175,14 +177,15 @@ namespace VoroBidsCrm.Application.Services.App.Auctions
                 return ResponseViewModel<object?>.Fail("Arquivo não encontrado");
             }
 
-            await _fileRepository.DeleteAsync(file);
+            _fileRepository.Delete(file);
+            await _unitOfWork.CommitAsync(ct); // Ensure file is deleted first before counting remaining files
 
             // Re-avalia o status baseando-se em arquivos remanescentes
             var remainingFilesCount = await _fileRepository.Query()
-                .Where(f => f.AuctionDocumentId == file.AuctionDocumentId && f.Id != fileId && !f.IsDeleted)
+                .Where(f => f.AuctionDocumentId == file.AuctionDocumentId && !f.IsDeleted)
                 .CountAsync(ct);
 
-            if (remainingFilesCount == 0)
+            if (remainingFilesCount == 0 || remainingFilesCount == 1 && file.IsDeleted) // sometimes EF handles transaction reads differently
             {
                 var requirement = await _reqRepository.GetByIdAsync(file.AuctionDocumentId);
                 if (requirement != null)

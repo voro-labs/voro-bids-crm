@@ -16,7 +16,7 @@ export const API_CONFIG = {
     TENANT_ME: "/tenant/me",
     TENANT_MODULES: "/tenant/me/modules",
     AUCTIONS: "/auctions",
-    COMPANY_DOCUMENTS: "/tenant/me/company-documents",
+    COMPANY_DOCUMENTS: "/companydocuments",
   },
   HEADERS: {
     "Content-Type": "application/json",

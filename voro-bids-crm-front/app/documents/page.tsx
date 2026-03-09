@@ -36,12 +36,71 @@ export default function DocumentsPage() {
     )
 
     const [searchQuery, setSearchQuery] = useState("")
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
+
+    const [formData, setFormData] = useState({
+        name: "",
+        description: "",
+        expirationDate: "",
+        file: null as File | null,
+    })
 
     const filteredDocs = documents?.filter(
         (doc) =>
             doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (doc.description && doc.description.toLowerCase().includes(searchQuery.toLowerCase()))
     )
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setFormData({ ...formData, file: e.target.files[0] })
+        }
+    }
+
+    const handleUploadSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        if (!formData.file) {
+            toast({ title: "Erro", description: "Selecione um arquivo", variant: "destructive" })
+            return
+        }
+        if (!formData.name) {
+            toast({ title: "Erro", description: "Dê um nome ao documento", variant: "destructive" })
+            return
+        }
+
+        setIsUploading(true)
+
+        try {
+            const formPayload = new FormData()
+            formPayload.append("Name", formData.name)
+            if (formData.description) formPayload.append("Description", formData.description)
+            if (formData.expirationDate) {
+                const isoDate = new Date(formData.expirationDate).toISOString()
+                formPayload.append("ExpirationDate", isoDate)
+            }
+            formPayload.append("File", formData.file)
+
+            const res = await secureApiCall(API_CONFIG.ENDPOINTS.COMPANY_DOCUMENTS, {
+                method: "POST",
+                body: formPayload,
+            })
+
+            if (!res.hasError) {
+                toast({ title: "Sucesso", description: "Documento enviado." })
+                setIsUploadModalOpen(false)
+                setFormData({ name: "", description: "", expirationDate: "", file: null })
+                mutate()
+            } else {
+                toast({ title: "Erro", description: res.message || "Falha no upload.", variant: "destructive" })
+            }
+        } catch (err) {
+            toast({ title: "Erro", description: "Falha na comunicação com o servidor.", variant: "destructive" })
+        } finally {
+            setIsUploading(false)
+        }
+    }
 
     const openDocument = async (url: string) => {
         try {
@@ -88,11 +147,67 @@ export default function DocumentsPage() {
                     </p>
                 </div>
                 <div className="flex items-center space-x-2">
-                    {/* O botão New será resolvido em seguida */}
-                    <Button onClick={() => alert("Modal de upload de documento em desenvolvimento.")}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Novo Documento
-                    </Button>
+                    <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+                        <DialogTrigger asChild>
+                            <Button>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Novo Documento
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                                <DialogTitle>Enviar Documento</DialogTitle>
+                                <DialogDescription>
+                                    Faça o upload de uma certidão ou atestado. Documentos ficam disponíveis para uso em licitações.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={handleUploadSubmit} className="space-y-4 pt-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Nome do Documento <span className="text-red-500">*</span></Label>
+                                    <Input
+                                        id="name"
+                                        value={formData.name}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        placeholder="Ex: Certidão Negativa de Débitos Federais"
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="description">Descrição</Label>
+                                    <Textarea
+                                        id="description"
+                                        value={formData.description}
+                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                        placeholder="Informações adicionais (opcional)"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="expirationDate">Data de Validade/Expiração</Label>
+                                    <Input
+                                        id="expirationDate"
+                                        type="date"
+                                        value={formData.expirationDate}
+                                        onChange={e => setFormData({ ...formData, expirationDate: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="file">Arquivo (PDF, Imagens) <span className="text-red-500">*</span></Label>
+                                    <Input
+                                        id="file"
+                                        type="file"
+                                        onChange={handleFileChange}
+                                        required
+                                    />
+                                </div>
+                                <DialogFooter className="pt-4">
+                                    <Button type="button" variant="outline" onClick={() => setIsUploadModalOpen(false)}>Cancelar</Button>
+                                    <Button type="submit" disabled={isUploading}>
+                                        {isUploading ? "Enviando..." : "Salvar Documento"}
+                                    </Button>
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
 

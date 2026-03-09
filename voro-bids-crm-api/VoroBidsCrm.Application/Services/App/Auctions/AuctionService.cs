@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using VoroBidsCrm.Application.DTOs.Auctions;
+using VoroBidsCrm.Application.Services.Interfaces;
 using VoroBidsCrm.Application.Services.Interfaces.App.Auctions;
 using VoroBidsCrm.Domain.Entities;
 using VoroBidsCrm.Domain.Interfaces.Repositories;
@@ -13,15 +14,18 @@ namespace VoroBidsCrm.Application.Services.App.Auctions
         private readonly IAuctionRepository _auctionRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<AuctionService> _logger;
+        private readonly ICurrentUserService _currentUserService;
 
         public AuctionService(
             IAuctionRepository auctionRepository,
             IMapper mapper,
-            ILogger<AuctionService> logger)
+            ILogger<AuctionService> logger,
+            ICurrentUserService currentUserService)
         {
             _auctionRepository = auctionRepository;
             _mapper = mapper;
             _logger = logger;
+            _currentUserService = currentUserService;
         }
 
         public async Task<ResponseViewModel<IEnumerable<AuctionDto>>> GetAllAsync()
@@ -63,8 +67,11 @@ namespace VoroBidsCrm.Application.Services.App.Auctions
             try
             {
                 var auction = _mapper.Map<Auction>(createDto);
+                auction.TenantId = _currentUserService.TenantId;
 
                 await _auctionRepository.AddAsync(auction);
+
+                await _auctionRepository.SaveChangesAsync();
 
                 var dto = _mapper.Map<AuctionDto>(auction);
                 return ResponseViewModel<AuctionDto>.Success(dto);
@@ -91,6 +98,7 @@ namespace VoroBidsCrm.Application.Services.App.Auctions
                 _mapper.Map(updateDto, existingAuction);
 
                 _auctionRepository.Update(existingAuction);
+                await _auctionRepository.SaveChangesAsync();
 
                 var dto = _mapper.Map<AuctionDto>(existingAuction);
                 return ResponseViewModel<AuctionDto>.Success(dto);
@@ -116,6 +124,7 @@ namespace VoroBidsCrm.Application.Services.App.Auctions
                 auction.DeletedAt = DateTimeOffset.UtcNow;
 
                 _auctionRepository.Update(auction);
+                await _auctionRepository.SaveChangesAsync();
 
                 return ResponseViewModel<object?>.Success(null);
             }

@@ -2,15 +2,16 @@ using Microsoft.EntityFrameworkCore;
 using VoroBidsCrm.Domain.Entities;
 using VoroBidsCrm.Domain.Interfaces.Repositories;
 using VoroBidsCrm.Domain.Interfaces.UnitOfWork;
+using VoroBidsCrm.Infrastructure.Factories;
 
 namespace VoroBidsCrm.Infrastructure.Repositories
 {
     public class CompanyDocumentRepository : ICompanyDocumentRepository
     {
-        private readonly DbContext _context;
+        private readonly JasmimDbContext _context;
         private readonly IUnitOfWork _unitOfWork;
 
-        public CompanyDocumentRepository(DbContext context, IUnitOfWork unitOfWork)
+        public CompanyDocumentRepository(JasmimDbContext context, IUnitOfWork unitOfWork)
         {
             _context = context;
             _unitOfWork = unitOfWork;

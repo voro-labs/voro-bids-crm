@@ -8,7 +8,7 @@ using VoroBidsCrm.Shared.ViewModels;
 namespace VoroBidsCrm.API.Controllers
 {
     [ApiController]
-    [Route("api/v1/tenant/me/auctions/{auctionId:guid}/documents")]
+    [Route("api/v{version:version}/auctions/{auctionId:guid}/documents")]
     [Tags("Auction Documents")]
     [Authorize]
     public class AuctionDocumentsController : ControllerBase
