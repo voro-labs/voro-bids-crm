@@ -1,4 +1,4 @@
-﻿using VoroBidsCrm.Application.DTOs.CRM;
+﻿using VoroBidsCrm.Application.DTOs.Tenants;
 
 namespace VoroBidsCrm.Application.DTOs
 {

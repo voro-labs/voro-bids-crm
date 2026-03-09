@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using VoroBidsCrm.Application.Services;
+using VoroBidsCrm.Application.Services.App.Auctions;
 using VoroBidsCrm.Application.Services.Identity;
 using VoroBidsCrm.Application.Services.Interfaces;
+using VoroBidsCrm.Application.Services.Interfaces.App.Auctions;
 using VoroBidsCrm.Application.Services.Interfaces.Blob;
 using VoroBidsCrm.Application.Services.Interfaces.Email;
 using VoroBidsCrm.Application.Services.Interfaces.Identity;
@@ -47,12 +49,10 @@ namespace VoroBidsCrm.Contract.Extensions.Configurations
             services.AddScoped<IUserRoleRepository, UserRoleRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<ITenantRepository, TenantRepository>();
-            services.AddScoped<IClientRepository, ClientRepository>();
-            services.AddScoped<IServiceRepository, ServiceRepository>();
-            services.AddScoped<IServiceRecordRepository, ServiceRecordRepository>();
-            services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             services.AddScoped<ITenantModuleRepository, TenantModuleRepository>();
-            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            services.AddScoped<IAuctionRepository, AuctionRepository>();
+            services.AddScoped<IAuctionDocumentRepository, AuctionDocumentRepository>();
+            services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
             #endregion
 
             #region Identity Services
@@ -62,15 +62,8 @@ namespace VoroBidsCrm.Contract.Extensions.Configurations
             services.AddScoped<IUserRoleService, UserRoleService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<ITenantService, TenantService>();
-            services.AddScoped<IClientService, ClientService>();
-            services.AddScoped<IServiceService, ServiceService>();
-            services.AddScoped<IServiceRecordService, ServiceRecordService>();
-            services.AddScoped<IDashboardService, DashboardService>();
-            services.AddScoped<IExportService, ExportService>();
-            services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<ITenantModuleService, TenantModuleService>();
-            services.AddScoped<IEmployeeService, EmployeeService>();
-            services.AddScoped<IPublicBookingService, PublicBookingService>();
+            services.AddScoped<IAuctionService, AuctionService>();
             #endregion
 
             return services;
