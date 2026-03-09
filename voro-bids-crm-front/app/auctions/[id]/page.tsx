@@ -16,12 +16,17 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Calendar, Building, Info, Clock, Pencil } from "lucide-react"
+import Link from "next/link"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
 export interface Auction {
   id: string
   title: string
   organization: string
   biddingDate?: string
+  publishDate?: string
   status: number
 }
 
@@ -45,8 +50,17 @@ export interface AuctionDocument {
   files: DocumentFileDto[]
 }
 
+export interface AuctionChecklist {
+  id: string
+  auctionId: string
+  taskName: string
+  isCompleted: boolean
+  createdAt: string
+}
+
 const fetchAuction = (url: string) => secureApiCall<Auction>(url).then((res) => res.data as Auction | null)
 const fetchDocs = (url: string) => secureApiCall<AuctionDocument[]>(url).then((res) => res.data || [])
+const fetchChecklists = (url: string) => secureApiCall<AuctionChecklist[]>(url).then((res) => res.data || [])
 
 export default function AuctionDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -64,6 +78,11 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
     fetchDocs
   )
 
+  const { data: checklists, isLoading: isChecklistsLoading, mutate: mutateChecklists } = useSWR<AuctionChecklist[]>(
+    `${API_CONFIG.ENDPOINTS.AUCTION_CHECKLISTS}/${auctionId}`,
+    fetchChecklists
+  )
+
   // Upload Requirement state
   const [isReqModalOpen, setIsReqModalOpen] = useState(false)
   const [isReqSubmitting, setIsReqSubmitting] = useState(false)
@@ -74,6 +93,10 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
   const [isFileModalOpen, setIsFileModalOpen] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+  // Checklist state
+  const [newTaskName, setNewTaskName] = useState("")
+  const [isAddingTask, setIsAddingTask] = useState(false)
 
   const handleCreateRequirement = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -179,18 +202,109 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
     }
   }
 
+  const handleAddTask = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newTaskName.trim()) return
+
+    setIsAddingTask(true)
+    try {
+      const res = await secureApiCall(`${API_CONFIG.ENDPOINTS.AUCTION_CHECKLISTS}/${auctionId}`, {
+        method: "POST",
+        body: JSON.stringify({
+          taskName: newTaskName.trim()
+        })
+      })
+
+      if (!res.hasError) {
+        toast({ title: "Sucesso", description: "Tarefa adicionada." })
+        setNewTaskName("")
+        mutateChecklists()
+      } else {
+        toast({ title: "Erro", description: res.message || "Erro ao adicionar tarefa", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Erro", description: "Erro de rede ao adicionar tarefa.", variant: "destructive" })
+    } finally {
+      setIsAddingTask(false)
+    }
+  }
+
+  const toggleTaskCompletion = async (taskId: string) => {
+    await mutateChecklists(
+      async (currentData) => {
+        try {
+          const res = await secureApiCall(`${API_CONFIG.ENDPOINTS.AUCTION_CHECKLISTS}/${auctionId}/${taskId}/toggle`, {
+            method: "PATCH"
+          });
+          if (res.hasError) {
+            toast({ title: "Erro", description: "Erro ao atualizar status", variant: "destructive" })
+            return currentData;
+          }
+          return currentData?.map(task =>
+            task.id === taskId ? { ...task, isCompleted: !task.isCompleted } : task
+          );
+        } catch {
+          toast({ title: "Erro", description: "Erro de rede.", variant: "destructive" })
+          return currentData;
+        }
+      },
+      { revalidate: false }
+    );
+  }
+
+  const deleteTask = async (taskId: string) => {
+    if (!confirm("Deletar tarefa?")) return
+    try {
+      const res = await secureApiCall(`${API_CONFIG.ENDPOINTS.AUCTION_CHECKLISTS}/${auctionId}/${taskId}`, { method: "DELETE" })
+      if (!res.hasError) {
+        toast({ title: "Sucesso", description: "Tarefa excluída." })
+        mutateChecklists()
+      } else {
+        toast({ title: "Erro", description: "Erro ao excluir tarefa.", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Erro", description: "Erro de rede.", variant: "destructive" })
+    }
+  }
+
+  const getStatusBadge = (status: number) => {
+    switch (status) {
+      case 0: return <Badge variant="secondary">Em Estruturação</Badge>
+      case 1: return <Badge className="bg-green-600 hover:bg-green-700">Publicado</Badge>
+      case 2: return <Badge variant="destructive">Suspenso</Badge>
+      default: return <Badge variant="outline">Desconhecido</Badge>
+    }
+  }
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "Não informada"
+    try {
+      return format(new Date(dateString), "dd 'de' MMM, yyyy 'às' HH:mm", { locale: ptBR })
+    } catch {
+      return "Data inválida"
+    }
+  }
+
   if (isAuctionLoading) return <div className="p-8">Carregando...</div>
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center space-x-4 mb-4">
-        <Button variant="outline" size="icon" onClick={() => router.push('/auctions')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">{auction?.title || "Detalhes da Licitação"}</h2>
-          <p className="text-muted-foreground">{auction?.organization}</p>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-4">
+          <Button variant="outline" size="icon" onClick={() => router.push('/auctions')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">{auction?.title || "Detalhes da Licitação"}</h2>
+            <p className="text-muted-foreground">{auction?.organization}</p>
+          </div>
         </div>
+        <Button asChild variant="outline">
+          <Link href={`/auctions/${auctionId}/edit`}>
+            <Pencil className="h-4 w-4 mr-2" />
+            Editar
+          </Link>
+        </Button>
       </div>
 
       <Tabs defaultValue="documents" className="w-full">
@@ -200,14 +314,78 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
           <TabsTrigger value="tasks">Tarefas</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
-          <Card>
-            <CardHeader>
-              <CardTitle>Resumo da Licitação</CardTitle>
-            </CardHeader>
-            <CardContent>
-              Em desenvolvimento.
-            </CardContent>
-          </Card>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <Card className="col-span-4">
+              <CardHeader>
+                <CardTitle>Informações da Licitação</CardTitle>
+                <CardDescription>Detalhes do edital fornecidos durante o cadastro.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <Info className="h-4 w-4" />
+                    Título do Edital
+                  </p>
+                  <p className="text-base font-semibold">{auction?.title}</p>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <Building className="h-4 w-4" />
+                    Órgão Responsável
+                  </p>
+                  <p className="text-base">{auction?.organization}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Data de Publicação
+                    </p>
+                    <p className="text-base">{formatDate(auction?.publishDate)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      Data de Abertura (Concorrência)
+                    </p>
+                    <p className="text-base">{formatDate(auction?.biddingDate)}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Status Atual</p>
+                  <div className="mt-1">
+                    {auction && getStatusBadge(auction.status)}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="col-span-3">
+              <CardHeader>
+                <CardTitle>Resumo Rápido</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Requisitos Documentais</span>
+                    <span className="font-semibold">{documents?.length || 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Arquivos Anexados</span>
+                    <span className="font-semibold">{documents?.reduce((acc, doc) => acc + doc.files.length, 0) || 0}</span>
+                  </div>
+                  {/* Add more stats here later */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Tarefas Concluídas</span>
+                    <span className="font-semibold">{checklists?.filter(c => c.isCompleted).length || 0} / {checklists?.length || 0}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         <TabsContent value="documents" className="space-y-4 pt-4">
           {/* Upload Modals & Header */}
@@ -321,6 +499,61 @@ export default function AuctionDetailsPage({ params }: { params: Promise<{ id: s
               ))}
             </div>
           )}
+        </TabsContent>
+        <TabsContent value="tasks" className="space-y-6 pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Checklist de Tarefas</CardTitle>
+              <CardDescription>Acompanhe o andamento das etapas para esta licitação.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleAddTask} className="flex gap-2 mb-6">
+                <Input
+                  placeholder="Nova tarefa..."
+                  value={newTaskName}
+                  onChange={(e) => setNewTaskName(e.target.value)}
+                  disabled={isAddingTask}
+                  className="flex-1"
+                />
+                <Button type="submit" disabled={isAddingTask || !newTaskName.trim()}>
+                  Adicionar
+                </Button>
+              </form>
+
+              {isChecklistsLoading ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ) : checklists?.length === 0 ? (
+                <div className="border border-dashed rounded-lg p-8 text-center bg-muted/20">
+                  <p className="text-muted-foreground">Nenhuma tarefa adicionada ainda.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {checklists?.map(task => (
+                    <div key={task.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <input
+                          type="checkbox"
+                          checked={task.isCompleted}
+                          onChange={() => toggleTaskCompletion(task.id)}
+                          className="h-4 w-4 rounded border-gray-300 text-primary cursor-pointer mt-0.5"
+                        />
+                        <span className={`text-sm truncate ${task.isCompleted ? 'line-through text-muted-foreground' : 'font-medium'}`}>
+                          {task.taskName}
+                        </span>
+                      </div>
+                      <Button variant="ghost" size="sm" className="text-destructive h-8 w-8 p-0 shrink-0" onClick={() => deleteTask(task.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

@@ -16,7 +16,8 @@ export const API_CONFIG = {
     TENANT_ME: "/tenant/me",
     TENANT_MODULES: "/tenant/me/modules",
     AUCTIONS: "/auctions",
-    AUCTION_DOCUMENTS: "/auctionsdocuments",
+    AUCTION_DOCUMENTS: "/auctiondocuments",
+    AUCTION_CHECKLISTS: "/auctionchecklists",
     COMPANY_DOCUMENTS: "/companydocuments",
   },
   HEADERS: {

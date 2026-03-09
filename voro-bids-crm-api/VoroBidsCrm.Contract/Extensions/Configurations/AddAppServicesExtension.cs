@@ -57,6 +57,7 @@ namespace VoroBidsCrm.Contract.Extensions.Configurations
             services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
             services.AddScoped<ICompanyDocumentRepository, CompanyDocumentRepository>();
             services.AddScoped<IDocumentFileRepository, DocumentFileRepository>();
+            services.AddScoped<IAuctionChecklistRepository, AuctionChecklistRepository>();
             #endregion
 
             #region Identity Services
@@ -70,6 +71,7 @@ namespace VoroBidsCrm.Contract.Extensions.Configurations
             services.AddScoped<IAuctionService, AuctionService>();
             services.AddScoped<ICompanyDocumentService, CompanyDocumentService>();
             services.AddScoped<IAuctionDocumentService, AuctionDocumentService>();
+            services.AddScoped<IAuctionChecklistService, AuctionChecklistService>();
             #endregion
 
             return services;

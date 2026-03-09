@@ -49,14 +49,14 @@ interface TenantData {
 }
 
 const COLOR_PRESETS = [
-  { label: "Rosa Salão", primary: "#e11d48", secondary: "#f43f5e" },
+  { label: "Azul Gov", primary: "#1d4ed8", secondary: "#3b82f6" },
+  { label: "Verde Institucional", primary: "#059669", secondary: "#10b981" },
   { label: "Roxo Elegante", primary: "#7c3aed", secondary: "#a855f7" },
-  { label: "Marrom Clássico", primary: "#8B4513", secondary: "#A0522D" },
-  { label: "Verde Esmeralda", primary: "#059669", secondary: "#10b981" },
-  { label: "Azul Profissional", primary: "#1d4ed8", secondary: "#3b82f6" },
+  { label: "Marinho", primary: "#1e3a5f", secondary: "#2563eb" },
   { label: "Dourado Premium", primary: "#b45309", secondary: "#d97706" },
   { label: "Carbono", primary: "#374151", secondary: "#6b7280" },
   { label: "Coral", primary: "#dc4f2f", secondary: "#f97316" },
+  { label: "Índigo", primary: "#4338ca", secondary: "#6366f1" },
 ]
 
 const RADIUS_PRESETS = [
@@ -155,8 +155,7 @@ export default function ConfiguracoesPage() {
   const { data: tenant, isLoading, mutate } = useSWR(API_CONFIG.ENDPOINTS.TENANT_ME, fetcher)
   const [saving, setSaving] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
-  const [exportingClients, setExportingClients] = useState(false)
-  const [exportingServices, setExportingServices] = useState(false)
+  const [exportingAuctions, setExportingAuctions] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [currentRadius, setCurrentRadius] = useState("0.625rem")
   const [countryCode, setCountryCode] = useState("BR")
@@ -183,8 +182,8 @@ export default function ConfiguracoesPage() {
         name: tenant.name ?? "",
         slug: tenant.slug ?? "",
         logoUrl: tenant.logoUrl ?? "",
-        primaryColor: tenant.primaryColor ?? "#8B4513",
-        secondaryColor: tenant.secondaryColor ?? "#A0522D",
+        primaryColor: tenant.primaryColor ?? "#1d4ed8",
+        secondaryColor: tenant.secondaryColor ?? "#3b82f6",
         contactPhone: phoneNumber,
         contactEmail: tenant.contactEmail ?? "",
       })
@@ -204,8 +203,8 @@ export default function ConfiguracoesPage() {
     name: "",
     slug: "",
     logoUrl: "",
-    primaryColor: "#8B4513",
-    secondaryColor: "#A0522D",
+    primaryColor: "#1d4ed8",
+    secondaryColor: "#3b82f6",
     contactPhone: "",
     contactEmail: "",
   }
@@ -223,7 +222,7 @@ export default function ConfiguracoesPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     if (!formData.name.trim()) {
-      toast.error("Nome do estabelecimento é obrigatório.")
+      toast.error("Nome da empresa é obrigatório.")
       return
     }
     if (!formData.slug.trim()) {
@@ -299,12 +298,10 @@ export default function ConfiguracoesPage() {
     }
   }
 
-  async function handleExport(type: "clients" | "services") {
-    const setter = type === "clients" ? setExportingClients : setExportingServices
-    setter(true)
+  async function handleExportAuctions() {
+    setExportingAuctions(true)
     try {
-      const endpoint = type === "clients" ? API_CONFIG.ENDPOINTS.EXPORT_CLIENTS : API_CONFIG.ENDPOINTS.EXPORT_SERVICES
-      const res = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, {
+      const res = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUCTIONS}/export`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       })
       if (!res.ok) { toast.error("Erro ao exportar dados."); return }
@@ -312,7 +309,7 @@ export default function ConfiguracoesPage() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `${type}-${new Date().toISOString().split("T")[0]}.csv`
+      a.download = `licitacoes-${new Date().toISOString().split("T")[0]}.csv`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -321,7 +318,7 @@ export default function ConfiguracoesPage() {
     } catch {
       toast.error("Erro ao exportar.")
     } finally {
-      setter(false)
+      setExportingAuctions(false)
     }
   }
 
@@ -370,7 +367,7 @@ export default function ConfiguracoesPage() {
           <TabsList className="mb-4">
             <TabsTrigger value="geral">
               <Building2 className="mr-2 h-4 w-4" />
-              Estabelecimento
+              Empresa
             </TabsTrigger>
             <TabsTrigger value="aparencia">
               <Palette className="mr-2 h-4 w-4" />
@@ -392,18 +389,18 @@ export default function ConfiguracoesPage() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-primary" />
-                  <CardTitle>Dados do Estabelecimento</CardTitle>
+                  <CardTitle>Dados da Empresa</CardTitle>
                 </div>
-                <CardDescription>Nome, slug, logo e informações de contato do seu salão</CardDescription>
+                <CardDescription>Nome, slug, logo e informações de contato da sua empresa</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSave} className="flex flex-col gap-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="tenant-name">Nome do Estabelecimento *</Label>
+                      <Label htmlFor="tenant-name">Nome da Empresa *</Label>
                       <Input
                         id="tenant-name"
-                        placeholder="Meu Salão"
+                        placeholder="Minha Empresa Ltda"
                         value={formData.name}
                         onChange={(e) => setForm((p) => p ? { ...p, name: e.target.value } : null)}
                       />
@@ -412,7 +409,7 @@ export default function ConfiguracoesPage() {
                       <Label htmlFor="tenant-slug">Slug *</Label>
                       <Input
                         id="tenant-slug"
-                        placeholder="meu-salao"
+                        placeholder="minha-empresa"
                         value={formData.slug}
                         onChange={(e) => setForm((p) => p ? { ...p, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') } : null)}
                       />
@@ -420,7 +417,7 @@ export default function ConfiguracoesPage() {
                   </div>
                   <div className="grid grid-cols-1 gap-4">
                     <div className="flex flex-col gap-4">
-                      <Label>Logotipo do Estabelecimento</Label>
+                      <Label>Logotipo da Empresa</Label>
                       <div className="flex flex-col sm:flex-row items-start gap-4">
                         {/* Preview Section */}
                         <div className="relative group w-32 h-32 rounded-lg border-2 border-dashed border-muted flex items-center justify-center overflow-hidden bg-muted/30">
@@ -533,7 +530,7 @@ export default function ConfiguracoesPage() {
                       <Input
                         id="contact-email"
                         type="email"
-                        placeholder="contato@meusalao.com"
+                        placeholder="contato@minhaempresa.com.br"
                         value={formData.contactEmail}
                         onChange={(e) => setForm((p) => p ? { ...p, contactEmail: e.target.value } : null)}
                       />
@@ -733,10 +730,10 @@ export default function ConfiguracoesPage() {
                   } catch { }
 
                   const moduleNames: Record<number, string> = {
-                    1: "Clientes",
-                    2: "Agendamentos",
-                    3: "Serviços",
-                    4: "Funcionários"
+                    1: "Licitações",
+                    2: "Documentos",
+                    3: "Checklists",
+                    4: "Usuários"
                   };
 
                   return (
@@ -796,13 +793,9 @@ export default function ConfiguracoesPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-3">
-                  <Button variant="outline" size="sm" onClick={() => handleExport("clients")} disabled={exportingClients}>
-                    {exportingClients ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                    Exportar Clientes
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleExport("services")} disabled={exportingServices}>
-                    {exportingServices ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                    Exportar Serviços
+                  <Button variant="outline" size="sm" onClick={handleExportAuctions} disabled={exportingAuctions}>
+                    {exportingAuctions ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                    Exportar Licitações (.CSV)
                   </Button>
                 </div>
               </CardContent>
