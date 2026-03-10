@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VoroBidsCrm.Application.DTOs.Public;
 using VoroBidsCrm.Application.DTOs.Tenant;
 using VoroBidsCrm.Application.Services.Interfaces;
 using VoroBidsCrm.Application.Services.Interfaces.Blob;
@@ -38,6 +39,24 @@ namespace VoroBidsCrm.API.Controllers
                     tenant.LogoUrl, tenant.PrimaryColor, tenant.SecondaryColor, tenant.ContactPhone, tenant.ContactEmail, tenant.ThemeMode);
 
                 return ResponseViewModel<TenantDto>.SuccessWithMessage("Current tenant retrieved.", dto).ToActionResult();
+            }
+            catch (Exception ex)
+            {
+                return ResponseViewModel<object>.Fail(ex.Message).ToActionResult();
+            }
+        }
+
+        [HttpGet("slug/{slug}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTenantBySlug([FromRoute] string slug)
+        {
+            try
+            {
+                var result = await tenantService.GetBySlugAsync(slug);
+                if (result == null)
+                    return ResponseViewModel<object>.Fail("Estabelecimento não encontrado.").ToActionResult();
+
+                return ResponseViewModel<PublicTenantDto>.Success(result).ToActionResult();
             }
             catch (Exception ex)
             {

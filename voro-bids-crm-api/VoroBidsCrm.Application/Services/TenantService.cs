@@ -1,3 +1,4 @@
+using VoroBidsCrm.Application.DTOs.Public;
 using VoroBidsCrm.Application.DTOs.Tenant;
 using VoroBidsCrm.Application.Services.Base;
 using VoroBidsCrm.Application.Services.Interfaces;
@@ -38,9 +39,21 @@ namespace VoroBidsCrm.Application.Services
             return await _tenantRepository.GetByIdAsync(id);
         }
 
-        public async Task<Tenant?> GetBySlugAsync(string slug)
+        public async Task<PublicTenantDto?> GetBySlugAsync(string slug)
         {
-            return await _tenantRepository.GetBySlugAsync(slug);
+            var tenant = await _tenantRepository.GetBySlugAsync(slug);
+            if (tenant == null) return null;
+
+            return new PublicTenantDto(
+                tenant.Id,
+                tenant.Name,
+                tenant.Slug,
+                tenant.ContactPhone,
+                tenant.LogoUrl,
+                tenant.PrimaryColor,
+                tenant.SecondaryColor,
+                tenant.ThemeMode?.ToString()
+            );
         }
 
         public async Task<IEnumerable<Tenant>> GetAllAsync()

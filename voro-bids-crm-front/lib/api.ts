@@ -14,6 +14,7 @@ export const API_CONFIG = {
     ME: "/auth/me",
     TENANT: "/tenant",
     TENANT_ME: "/tenant/me",
+    TENANT_BY_SLUG: "/tenant/slug",
     TENANT_MODULES: "/tenant/me/modules",
     AUCTIONS: "/auctions",
     AUCTION_DOCUMENTS: "/auctiondocuments",

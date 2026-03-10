@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { LoadingSimple } from "../../ui/custom/loading/loading-simple"
 import { useAuth } from "@/contexts/auth.context"
-import { routesAllowed } from "@/lib/allowed-utils"
+import { routesAllowed, routesAllowedPatterns } from "@/lib/allowed-utils"
 import { Navbar } from "./navbar"
 import { Sidebar } from "./sidebar"
 import useSWR from "swr"
@@ -96,6 +96,7 @@ export function Main({ children }: MainProps) {
 
   if (!user?.token) {
     const isPublicRoute = routesAllowed.some(item => pathname.startsWith(item))
+      || routesAllowedPatterns.some(pattern => pattern.test(pathname))
 
     if (!isPublicRoute) {
       // Rota protegida sem usuário: redireciona silenciosamente
