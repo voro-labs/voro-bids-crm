@@ -2,16 +2,18 @@ using VoroBidsCrm.Application.DTOs.Public;
 using VoroBidsCrm.Application.DTOs.Tenant;
 using VoroBidsCrm.Application.Services.Base;
 using VoroBidsCrm.Application.Services.Interfaces;
+using VoroBidsCrm.Application.Services.Interfaces.Blob;
 using VoroBidsCrm.Domain.Entities;
 using VoroBidsCrm.Domain.Interfaces.Repositories;
 using VoroBidsCrm.Domain.Interfaces.UnitOfWork;
 
 namespace VoroBidsCrm.Application.Services
 {
-    public class TenantService(ITenantRepository tenantRepository, IUnitOfWork unitOfWork) : ServiceBase<Tenant>(tenantRepository), ITenantService
+    public class TenantService(ITenantRepository tenantRepository, IUnitOfWork unitOfWork, IBlobService blobService) : ServiceBase<Tenant>(tenantRepository), ITenantService
     {
         private readonly ITenantRepository _tenantRepository = tenantRepository;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IBlobService _blobService = blobService;
 
         public async Task<Tenant> CreateAsync(CreateTenantDto dto)
         {
@@ -36,7 +38,15 @@ namespace VoroBidsCrm.Application.Services
 
         public async Task<Tenant?> GetByIdAsync(Guid id)
         {
-            return await _tenantRepository.GetByIdAsync(id);
+            var tenant = await _tenantRepository.GetByIdAsync(id);
+            if (tenant is null) return null;
+
+            if (!string.IsNullOrEmpty(tenant.LogoUrl))
+            {
+                tenant.LogoUrl = await _blobService.GetSignedUrlAsync(tenant.LogoUrl);
+            }
+
+            return tenant;
         }
 
         public async Task<PublicTenantDto?> GetBySlugAsync(string slug)
@@ -44,12 +54,19 @@ namespace VoroBidsCrm.Application.Services
             var tenant = await _tenantRepository.GetBySlugAsync(slug);
             if (tenant == null) return null;
 
+            string? logoUrl = null;
+
+            if (!string.IsNullOrEmpty(tenant.LogoUrl))
+            {
+                logoUrl = await _blobService.GetSignedUrlAsync(tenant.LogoUrl);
+            }
+
             return new PublicTenantDto(
                 tenant.Id,
                 tenant.Name,
                 tenant.Slug,
                 tenant.ContactPhone,
-                tenant.LogoUrl,
+                logoUrl,
                 tenant.PrimaryColor,
                 tenant.SecondaryColor,
                 tenant.ThemeMode?.ToString()

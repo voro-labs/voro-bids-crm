@@ -10,7 +10,7 @@ import { TenantThemeProvider } from "@/contexts/tenant-theme.context"
 
 const _geist = Geist({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
+const DEFAULT_METADATA: Metadata = {
   title: 'Bids CRM - Gestão de Licitações e Leilões',
   description: 'Sistema para gestão de licitações e leilões, com controle de clientes, acompanhamento de editais, propostas e automação do processo de participação em licitações.',
   keywords: [
@@ -31,24 +31,45 @@ export const metadata: Metadata = {
     "plataforma de gestão de licitações"
   ],
   generator: "vorolabs.app",
-  icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.png",
-        type: "image/png",
-      },
-    ],
-    apple: "/apple-icon.png",
-  },
+
 }
+
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const { cookies } = await import("next/headers")
+    const cookieStore = await cookies()
+    const slug = cookieStore.get("voro_tenant_slug")?.value
+
+    if (!slug) return DEFAULT_METADATA
+
+    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/${process.env.NEXT_PUBLIC_API_URL}`
+    const res = await fetch(`${baseUrl}/tenant/slug/${encodeURIComponent(slug)}`, {
+      cache: "no-store", // always fresh — never stale cached metadata
+    })
+
+    if (!res.ok) return DEFAULT_METADATA
+
+    const json = await res.json()
+    const tenant = json?.data
+
+    if (!tenant?.name) return DEFAULT_METADATA
+
+    return {
+      ...DEFAULT_METADATA,
+      title: `${tenant.name} - CRM`,
+      icons: tenant.logoUrl
+        ? {
+          icon: tenant.logoUrl,
+          shortcut: tenant.logoUrl,
+          apple: tenant.logoUrl,
+        }
+        : DEFAULT_METADATA.icons,
+    }
+  } catch {
+    return DEFAULT_METADATA
+  }
+}
+
 
 export default function RootLayout({
   children,

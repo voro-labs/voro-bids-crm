@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, type ReactNode } from "react"
 import { API_CONFIG, secureApiCall } from "@/lib/api"
+import { saveTenantBranding, applyTenantBranding, loadTenantBranding } from "@/hooks/use-tenant-branding"
 
 interface TenantTheme {
   primaryColor: string | null
@@ -104,27 +105,36 @@ export function TenantThemeProvider({ children }: { children: ReactNode }) {
       }
     } catch { }
 
-    // 2. No cache = first-time visitor: apply generic default so admin pages look branded
+    // 2. Apply cached branding (title + favicon) immediately for all pages
+    const branding = loadTenantBranding()
+    if (branding.name || branding.logoUrl) {
+      applyTenantBranding(branding.name, branding.logoUrl)
+    }
+
+    // 3. No cache = first-time visitor: apply generic default so admin pages look branded
     if (!applied) {
       applyColors(DEFAULT_THEME.primaryColor, DEFAULT_THEME.secondaryColor)
     }
 
-    // 3. Only fetch fresh colors from API if authenticated
+    // 4. Only fetch fresh data from API if authenticated
     const token = localStorage.getItem("vorolabs_bids_token")
     if (!token) return
 
-    // 4. Fetch fresh colors from API
-    secureApiCall<{ primaryColor: string | null; secondaryColor: string | null }>(
+    // 5. Fetch fresh colors + branding from API
+    secureApiCall<{ name: string; slug: string; logoUrl: string | null; primaryColor: string | null; secondaryColor: string | null }>(
       API_CONFIG.ENDPOINTS.TENANT_ME,
       { method: "GET" }
     ).then((res) => {
       if (!res.hasError && res.data) {
-        const { primaryColor, secondaryColor } = res.data
+        const { name, slug, logoUrl, primaryColor, secondaryColor } = res.data
         // Fall back to default if tenant hasn't set custom colors
         const p = primaryColor ?? DEFAULT_THEME.primaryColor
         const s = secondaryColor ?? DEFAULT_THEME.secondaryColor
         applyColors(p, s)
         localStorage.setItem(LS_KEY, JSON.stringify({ primaryColor: p, secondaryColor: s }))
+        // Save branding (name + logoUrl) to localStorage and slug to cookie for server-side generateMetadata
+        saveTenantBranding(name ?? null, logoUrl ?? null, slug ?? null)
+        applyTenantBranding(name ?? null, logoUrl ?? null)
       }
     }).catch(() => { })
   }, [])

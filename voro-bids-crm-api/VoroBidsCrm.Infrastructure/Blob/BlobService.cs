@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 using VoroBidsCrm.Application.Services.Interfaces.Blob;
 using VoroBidsCrm.Shared.Extensions;
@@ -62,6 +64,28 @@ namespace VoroBidsCrm.Infrastructure.Blob
                 ?? throw new InvalidOperationException("Blob response missing URL");
         }
 
+        public async Task<string?> GetSignedUrlAsync(string blobUrl, CancellationToken ct = default)
+        {
+            // Vercel Blob "head" endpoint — returns metadata including a signed downloadUrl
+            var url = blobUrl;
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _config.Token);
+
+            using var response = await _http.SendAsync(request, ct);
+            if (!response.IsSuccessStatusCode) return null;
+
+            var bytes = await response.Content.ReadAsByteArrayAsync(ct);
+
+            var base64 = Convert.ToBase64String(bytes);
+
+            return $"data:image/png;base64,{base64}";
+        }
+
         private sealed record VercelBlobResponse(string Url);
+        private sealed record VercelBlobHeadResponse(
+            [property: JsonPropertyName("url")] string Url,
+            [property: JsonPropertyName("downloadUrl")] string? DownloadUrl
+        );
     }
 }

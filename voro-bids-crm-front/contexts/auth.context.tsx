@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 import { getAuthToken, removeAuthToken, setAuthToken } from "@/lib/api"
 import { AuthDto } from "@/types/DTOs/auth.interface"
 import { jwtDecode } from "jwt-decode"
+import { clearTenantBranding } from "@/hooks/use-tenant-branding"
 
 
 // Tipo do payload esperado no token JWT
@@ -112,6 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
     removeAuthToken()
     localStorage.removeItem("user_tenants")
+    clearTenantBranding()
   }
 
   const switchTenant = async (tenantId: string) => {
