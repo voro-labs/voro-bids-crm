@@ -32,20 +32,20 @@ export const API_CONFIG = {
 // Função para obter o token do localStorage
 export function getAuthToken(): string | null {
   if (typeof window === "undefined") return null
-  return localStorage.getItem("vorolabs_salon_token")
+  return localStorage.getItem("vorolabs_bids_token")
 }
 
 // Função para remover o token (logout)
 export function removeAuthToken(): void {
   if (typeof window !== "undefined") {
-    localStorage.removeItem("vorolabs_salon_token")
+    localStorage.removeItem("vorolabs_bids_token")
   }
 }
 
 // Função para salvar o token
 export function setAuthToken(token: string): void {
   if (typeof window !== "undefined") {
-    localStorage.setItem("vorolabs_salon_token", token)
+    localStorage.setItem("vorolabs_bids_token", token)
   }
 }
 

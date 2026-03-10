@@ -64,7 +64,7 @@ function applyColors(primary: string | null, secondary: string | null) {
       root.style.setProperty("--primary", ok.str)
       root.style.setProperty("--sidebar-primary", ok.str)
       root.style.setProperty("--ring", ok.str)
-      
+
       const fg = ok.l > 0.6 ? "oklch(0.10 0.01 285)" : "oklch(0.985 0.002 75)"
       root.style.setProperty("--primary-foreground", fg)
       root.style.setProperty("--sidebar-primary-foreground", fg)
@@ -75,7 +75,7 @@ function applyColors(primary: string | null, secondary: string | null) {
     if (ok) {
       root.style.setProperty("--accent", ok.str)
       root.style.setProperty("--sidebar-accent", ok.str)
-      
+
       const fg = ok.l > 0.6 ? "oklch(0.10 0.01 285)" : "oklch(0.985 0.002 75)"
       root.style.setProperty("--accent-foreground", fg)
       root.style.setProperty("--sidebar-accent-foreground", fg)
@@ -110,7 +110,7 @@ export function TenantThemeProvider({ children }: { children: ReactNode }) {
     }
 
     // 3. Only fetch fresh colors from API if authenticated
-    const token = localStorage.getItem("vorolabs_salon_token")
+    const token = localStorage.getItem("vorolabs_bids_token")
     if (!token) return
 
     // 4. Fetch fresh colors from API

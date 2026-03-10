@@ -61,7 +61,7 @@ export function Sidebar({ isOpen, onClose, tenant }: SidebarProps) {
   const { data: modulesData } = useSWR(API_CONFIG.ENDPOINTS.TENANT_MODULES, async (url) => {
     const res = await fetch(`${API_CONFIG.BASE_URL}${url}`, {
       headers: {
-        "Authorization": `Bearer ${localStorage.getItem("vorolabs_salon_token")}`
+        "Authorization": `Bearer ${localStorage.getItem("vorolabs_bids_token")}`
       }
     });
     const json = await res.json();

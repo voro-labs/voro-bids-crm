@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { LoadingSimple } from "../../ui/custom/loading/loading-simple"
 import { useAuth } from "@/contexts/auth.context"
@@ -20,6 +20,8 @@ interface MainProps {
 export function Main({ children }: MainProps) {
   const { user, loading } = useAuth()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [tenantLogoBlobUrl, setTenantLogoBlobUrl] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -33,21 +35,60 @@ export function Main({ children }: MainProps) {
   )
 
   useEffect(() => {
-    if (tenant) {
-      if (tenant.name) {
-        document.title = `${tenant.name} - CRM`
-      }
-      if (tenant.logoUrl) {
-        let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement
-        if (!link) {
-          link = document.createElement("link")
-          link.rel = "icon"
-          document.head.appendChild(link)
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!tenant?.logoUrl) return
+
+    let objectUrl: string | null = null
+
+    const fetchSignedUrl = async () => {
+      try {
+        const proxyUrl = `/api/blob/proxy?url=${encodeURIComponent(tenant.logoUrl)}`
+        const response = await fetch(proxyUrl)
+
+        if (!response.ok) throw new Error("Failed to fetch signed URL via proxy")
+
+        const blob = await response.blob()
+        objectUrl = URL.createObjectURL(blob)
+
+        if (isMountedRef.current) {
+          setTenantLogoBlobUrl(objectUrl)
+        } else {
+          URL.revokeObjectURL(objectUrl)
         }
-        link.href = tenant.logoUrl
+      } catch (err) {
+        console.error("Error fetching tenant logo:", err)
+        if (isMountedRef.current) setTenantLogoBlobUrl(null)
       }
     }
-  }, [tenant])
+
+    fetchSignedUrl()
+
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [tenant?.logoUrl])
+
+  useEffect(() => {
+    if (tenant?.name) {
+      document.title = `${tenant.name} - CRM`
+    }
+    const logoHref = tenantLogoBlobUrl ?? tenant?.logoUrl
+    if (logoHref) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement
+      if (!link) {
+        link = document.createElement("link")
+        link.rel = "icon"
+        document.head.appendChild(link)
+      }
+      link.href = logoHref
+    }
+  }, [tenant, tenantLogoBlobUrl])
 
   if (loading) {
     return <LoadingSimple />
